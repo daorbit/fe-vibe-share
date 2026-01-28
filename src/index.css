@@ -1,0 +1,460 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    --background: 220 15% 5%;
+    --foreground: 0 0% 98%;
+
+    --card: 220 15% 8%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 220 15% 10%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 16 90% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 12% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 220 10% 16%;
+    --muted-foreground: 220 8% 50%;
+
+    --accent: 35 100% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 10% 14%;
+    --input: 220 10% 16%;
+    --ring: 16 90% 55%;
+
+    --radius: 0.5rem;
+
+    /* Warm gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(16 90% 55%), hsl(35 100% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(200 80% 50%), hsl(16 90% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(35 100% 55%), hsl(16 90% 55%));
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px -10px hsl(16 90% 55% / 0.4);
+    --shadow-card: 0 8px 32px -8px hsl(0 0% 0% / 0.4);
+    --shadow-elevated: 0 16px 48px -12px hsl(0 0% 0% / 0.6);
+    --shadow-soft: 0 4px 16px -4px hsl(0 0% 0% / 0.2);
+    --shadow-nav: 0 -8px 32px -4px hsl(0 0% 0% / 0.5);
+
+    /* Sidebar - keeping for compatibility */
+    --sidebar-background: 220 15% 4%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 16 90% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 12% 12%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 10% 12%;
+    --sidebar-ring: 16 90% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Outfit', 'Inter', sans-serif;
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted));
+    border-radius: 2px;
+  }
+}
+
+@layer components {
+  /* Modern glass effects */
+  .glass {
+    @apply bg-card/60 backdrop-blur-2xl border border-white/5;
+  }
+
+  .glass-strong {
+    @apply bg-card/80 backdrop-blur-3xl border border-white/10;
+  }
+
+  .glass-subtle {
+    @apply bg-card/40 backdrop-blur-xl border border-white/5;
+  }
+
+  /* Gradient border */
+  .gradient-border {
+    position: relative;
+    background: hsl(var(--card));
+  }
+
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+  }
+
+  /* Button styles */
+  .btn-gradient {
+    background: var(--gradient-primary);
+    @apply text-white font-semibold shadow-lg transition-all duration-300;
+    box-shadow: 0 4px 24px -4px hsl(262 90% 62% / 0.4);
+  }
+
+  .btn-gradient:hover {
+    @apply opacity-90;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px -4px hsl(262 90% 62% / 0.5);
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-white/5 transition-all duration-200;
+  }
+
+  /* Text gradients */
+  .text-gradient {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-accent {
+    background: var(--gradient-accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Glow effects */
+  .glow {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .glow-sm {
+    box-shadow: 0 0 30px -10px hsl(262 90% 62% / 0.4);
+  }
+
+  /* Card styles */
+  .card-elevated {
+    @apply bg-card rounded-2xl border border-border/30;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card-interactive {
+    @apply bg-card rounded-2xl border border-border/30 transition-all duration-300;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-interactive:hover {
+    @apply border-primary/20;
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  /* Masonry grid */
+  .masonry-grid {
+    columns: 2;
+    column-gap: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .masonry-grid {
+      columns: 2;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .masonry-grid {
+      columns: 3;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .masonry-grid {
+      columns: 4;
+    }
+  }
+
+  .masonry-item {
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* Input styles */
+  .input-modern {
+    @apply bg-secondary/50 border-border/30 rounded-xl;
+    @apply focus:border-primary/50 focus:ring-2 focus:ring-primary/20;
+    @apply transition-all duration-200;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-all duration-300;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300;
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  /* Shine effect */
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      105deg,
+      transparent 40%,
+      rgba(255, 255, 255, 0.05) 45%,
+      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 55%,
+      transparent 60%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+  }
+
+  .shine:hover::after {
+    transform: translateX(100%);
+  }
+
+  /* Avatar ring */
+  .avatar-ring {
+    @apply ring-2 ring-offset-2 ring-offset-background;
+    --tw-ring-color: hsl(var(--primary));
+  }
+
+  /* Profile stat */
+  .stat-card {
+    @apply flex flex-col items-center justify-center p-4 rounded-2xl;
+    @apply bg-secondary/30 backdrop-blur-sm;
+    @apply transition-all duration-300 hover:bg-secondary/50;
+  }
+
+  /* Floating action button */
+  .fab {
+    @apply fixed bottom-24 right-4 md:bottom-8 md:right-8;
+    @apply w-14 h-14 rounded-full btn-gradient;
+    @apply flex items-center justify-center shadow-xl;
+    @apply active:scale-95 transition-all duration-300;
+    @apply z-50;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slide-down {
+    animation: slide-down 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 4s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slide-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-down {
+  0% { opacity: 0; transform: translateY(-24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 40px -10px hsl(262 90% 62% / 0.4); }
+  50% { box-shadow: 0 0 60px -10px hsl(262 90% 62% / 0.6); }
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 25%,
+    hsl(var(--secondary)) 50%,
+    hsl(var(--muted)) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Ant Design overrides */
+.ant-btn {
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+  box-shadow: none !important;
+}
+
+.ant-typography {
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+.ant-input,
+.ant-input-password,
+.ant-select-selector {
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+.ant-tabs-tab {
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Mobile touch optimization */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Ensure buttons and links are immediately responsive */
+  button,
+  a,
+  [role="button"],
+  .cursor-pointer {
+    touch-action: manipulation;
+  }
+  
+  /* Remove hover delay */
+  .hover\:bg-secondary:hover,
+  .hover\:bg-secondary\/80:hover,
+  .group:hover .group-hover\:opacity-100 {
+    transition-delay: 0ms !important;
+  }
+}
+
+/* Improve tap targets */
+@layer utilities {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
