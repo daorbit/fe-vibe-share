@@ -437,9 +437,9 @@ const ViewPlaylist = () => {
                       </div>
                     )}
                     
-                    {/* Play Overlay */}
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl">
+                    {/* Play Button - Always Visible */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
+                      <div className="w-11 h-11 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-black/30 group-hover:scale-110 transition-transform duration-300">
                         <Play className="w-5 h-5 text-primary-foreground fill-current ml-0.5" />
                       </div>
                     </div>
@@ -476,19 +476,28 @@ const ViewPlaylist = () => {
                     <div className="flex items-center gap-1">
                       <button 
                         type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePlaySong(index);
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-primary/90 hover:bg-primary text-[11px] font-medium text-primary-foreground transition-colors touch-manipulation"
+                      >
+                        <Play className="w-3 h-3 fill-current" />
+                        Play
+                      </button>
+                      <button 
+                        type="button"
                         onClick={(e) => handleOpenExternal(e, song)}
-                        className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-secondary/80 hover:bg-secondary active:bg-secondary text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
+                        className="w-7 h-7 rounded-md bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
                       >
                         <ExternalLink className="w-3 h-3" />
-                        Open
                       </button>
                       <button 
                         type="button"
                         onClick={(e) => handleShareSong(e, song)}
-                        className="flex-1 flex items-center justify-center gap-1 h-7 rounded-md bg-secondary/80 hover:bg-secondary active:bg-secondary text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
+                        className="w-7 h-7 rounded-md bg-secondary/80 hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
                       >
                         <Share2 className="w-3 h-3" />
-                        Share
                       </button>
                     </div>
                   </div>
