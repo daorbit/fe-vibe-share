@@ -101,11 +101,8 @@ const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-[100] animate-in slide-in-from-bottom duration-300">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      {/* Backdrop - no click handler, only Cancel button closes */}
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" />
       
       {/* Compact Bottom Sheet */}
       <div className="relative bg-background rounded-t-2xl border-t border-border/50 shadow-2xl max-w-lg mx-auto">

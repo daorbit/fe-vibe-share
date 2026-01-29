@@ -5,6 +5,7 @@ interface UIState {
   sidebarOpen: boolean;
   searchQuery: string;
   activeTab: string;
+  soundEnabled: boolean;
   toasts: Array<{
     id: string;
     message: string;
@@ -12,11 +13,21 @@ interface UIState {
   }>;
 }
 
+// Load sound preference from localStorage
+const loadSoundPreference = (): boolean => {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('soundEnabled');
+    return saved !== null ? JSON.parse(saved) : true;
+  }
+  return true;
+};
+
 const initialState: UIState = {
   theme: 'dark',
   sidebarOpen: true,
   searchQuery: '',
   activeTab: 'feed',
+  soundEnabled: loadSoundPreference(),
   toasts: [],
 };
 
@@ -39,6 +50,12 @@ const uiSlice = createSlice({
     setActiveTab: (state, action: PayloadAction<string>) => {
       state.activeTab = action.payload;
     },
+    setSoundEnabled: (state, action: PayloadAction<boolean>) => {
+      state.soundEnabled = action.payload;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('soundEnabled', JSON.stringify(action.payload));
+      }
+    },
     addToast: (state, action: PayloadAction<{ message: string; type: 'success' | 'error' | 'info' }>) => {
       state.toasts.push({
         id: Date.now().toString(),
@@ -57,6 +74,7 @@ export const {
   setSidebarOpen,
   setSearchQuery,
   setActiveTab,
+  setSoundEnabled,
   addToast,
   removeToast,
 } = uiSlice.actions;

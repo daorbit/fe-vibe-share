@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeColor = 'orange' | 'blue' | 'green' | 'pink' | 'purple';
+export type ThemeColor = 'orange' | 'blue' | 'green' | 'pink' | 'purple' | 'red' | 'teal' | 'amber' | 'indigo' | 'slate';
 
 interface ThemeConfig {
   name: string;
@@ -62,6 +62,56 @@ export const themes: Record<ThemeColor, ThemeConfig> = {
       primary: '262 83% 58%',
       accent: '262 83% 70%',
       ring: '262 83% 58%',
+    },
+  },
+  red: {
+    name: 'Cherry',
+    primary: '#ef4444',
+    accent: '#f87171',
+    cssVars: {
+      primary: '0 84% 60%',
+      accent: '0 91% 71%',
+      ring: '0 84% 60%',
+    },
+  },
+  teal: {
+    name: 'Aqua',
+    primary: '#14b8a6',
+    accent: '#2dd4bf',
+    cssVars: {
+      primary: '173 80% 40%',
+      accent: '172 66% 50%',
+      ring: '173 80% 40%',
+    },
+  },
+  amber: {
+    name: 'Gold',
+    primary: '#f59e0b',
+    accent: '#fbbf24',
+    cssVars: {
+      primary: '38 92% 50%',
+      accent: '45 93% 56%',
+      ring: '38 92% 50%',
+    },
+  },
+  indigo: {
+    name: 'Cosmic',
+    primary: '#6366f1',
+    accent: '#818cf8',
+    cssVars: {
+      primary: '239 84% 67%',
+      accent: '234 89% 74%',
+      ring: '239 84% 67%',
+    },
+  },
+  slate: {
+    name: 'Midnight',
+    primary: '#64748b',
+    accent: '#94a3b8',
+    cssVars: {
+      primary: '215 16% 47%',
+      accent: '215 20% 65%',
+      ring: '215 16% 47%',
     },
   },
 };

@@ -4,3 +4,7 @@ export { FeedSkeleton, FeedCardSkeleton } from './FeedSkeleton';
 export { SearchResultsSkeleton, UserResultSkeleton, PlaylistResultSkeleton } from './SearchResultsSkeleton';
 export { PlaylistDetailSkeleton } from './PlaylistDetailSkeleton';
 export { UserProfileSkeleton } from './UserProfileSkeleton';
+export { DiscoverSkeleton } from './DiscoverSkeleton';
+export { SettingsSkeleton } from './SettingsSkeleton';
+export { CreatePlaylistSkeleton } from './CreatePlaylistSkeleton';
+export { AuthSkeleton } from './AuthSkeleton';

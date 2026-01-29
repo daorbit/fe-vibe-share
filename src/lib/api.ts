@@ -1,5 +1,5 @@
 const API_BASE_URL = import.meta.env.PROD
-  ? 'https://be-vibeshare.daorbit.in/api'
+  ? 'https://be-vibe-share.vercel.app/api'
   : 'http://localhost:3000/api';
 
 // Helper function to handle API responses

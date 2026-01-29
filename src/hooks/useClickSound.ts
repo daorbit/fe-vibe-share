@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { store } from '@/store';
 
 type SoundType = 'click' | 'pop' | 'tap';
 
@@ -13,6 +14,10 @@ export const useClickSound = () => {
   }, []);
 
   const playSound = useCallback((type: SoundType = 'click') => {
+    // Check if sound is enabled from store (not a hook to avoid context issues)
+    const soundEnabled = store.getState().ui.soundEnabled;
+    if (!soundEnabled) return;
+
     try {
       const ctx = getAudioContext();
       const oscillator = ctx.createOscillator();

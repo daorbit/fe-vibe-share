@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MoreHorizontal, Grid3X3, Link2, Users, Share2, Music, Instagram, Twitter, Youtube } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Grid3X3, Link2, Users, Share2, Music, Instagram, Twitter, Youtube, UserPlus, MessageCircle } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { usePlaylist, Playlist } from "@/contexts/PlaylistContext";
 import { usersAPI } from "@/lib/api";
@@ -14,6 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { motion } from "framer-motion";
 
 interface UserData {
   id: string;
@@ -42,6 +43,7 @@ const UserProfile = () => {
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isFollowing, setIsFollowing] = useState(false);
   const fetchingPlaylistsRef = useRef(false);
   
   const isOwnProfile = currentUser?.username?.toLowerCase() === username?.toLowerCase();
@@ -60,6 +62,7 @@ const UserProfile = () => {
           username: fetchedUser.username,
           bio: fetchedUser.bio,
           avatarUrl: fetchedUser.avatarUrl,
+          socialLinks: fetchedUser.socialLinks,
           playlistCount: fetchedUser.playlistCount || 0,
         });
       } catch (err) {
@@ -110,6 +113,11 @@ const UserProfile = () => {
     }
   };
 
+  const handleFollow = () => {
+    setIsFollowing(!isFollowing);
+    toast.success(isFollowing ? "Unfollowed" : "Following!");
+  };
+
   if (loadingUser) {
     return <UserProfileSkeleton />;
   }
@@ -139,7 +147,7 @@ const UserProfile = () => {
       }
     : userProfile!;
 
-  const initial = displayProfile.username.charAt(0).toUpperCase();
+  const hasSocialLinks = displayProfile.socialLinks && Object.values(displayProfile.socialLinks).some(link => link);
 
   return (
     <div className="min-h-screen pb-28">
@@ -164,169 +172,196 @@ const UserProfile = () => {
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Profile Card */}
-        <div className="bg-card rounded-2xl border border-border/40 p-6 mb-6">
-          <div className="flex items-start gap-4">
-            {/* Avatar */}
-            <UserAvatar avatarUrl={displayProfile.avatarUrl} size={80} className="flex-shrink-0 shadow-lg ring-2 ring-primary/20 ring-offset-2 ring-offset-background" />
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl font-bold truncate">{displayProfile.username}</h1>
-              {displayProfile.bio && (
-                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{displayProfile.bio}</p>
-              )}
-              
-              {/* Stats */}
-              <div className="flex items-center gap-6 mt-4">
-                <div className="text-center">
-                  <p className="text-lg font-bold">{displayProfile.playlistCount}</p>
-                  <p className="text-xs text-muted-foreground">Playlists</p>
-                </div>
+        {/* Profile Hero */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-8"
+        >
+          {/* Avatar */}
+          <div className="relative inline-block mb-4">
+            <UserAvatar 
+              avatarUrl={displayProfile.avatarUrl} 
+              size={100} 
+              className="shadow-2xl ring-4 ring-primary/20 ring-offset-4 ring-offset-background" 
+            />
+            {!isOwnProfile && (
+              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg">
+                <Music className="w-4 h-4 text-primary-foreground" />
               </div>
+            )}
+          </div>
+
+          {/* Name & Bio */}
+          <h1 className="text-2xl font-bold mb-1">{displayProfile.username}</h1>
+          {displayProfile.bio && (
+            <p className="text-muted-foreground max-w-xs mx-auto mb-4">{displayProfile.bio}</p>
+          )}
+
+          {/* Stats */}
+          <div className="flex items-center justify-center gap-8 mb-6">
+            <div className="text-center">
+              <p className="text-2xl font-bold">{displayProfile.playlistCount}</p>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide">Playlists</p>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 mt-6">
-            {isOwnProfile ? (
-              <>
-                <Button variant="outline" className="flex-1 rounded-xl" onClick={() => navigate("/edit-profile")}>
-                  Edit Profile
-                </Button>
-                <Button className="flex-1 rounded-xl" onClick={() => navigate("/playlist/create")}>
-                  Create Playlist
-                </Button>
-              </>
-            ) : (
-              <Button variant="outline" className="flex-1 rounded-xl gap-2" onClick={handleShare}>
-                <Share2 className="w-4 h-4" />
-                Share Profile
+          {isOwnProfile ? (
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" className="rounded-full px-6" onClick={() => navigate("/edit-profile")}>
+                Edit Profile
               </Button>
-            )}
-          </div>
-        </div>
+              <Button className="rounded-full px-6" onClick={() => navigate("/playlist/create")}>
+                Create Playlist
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-3 justify-center">
+              <Button 
+                variant={isFollowing ? "outline" : "default"}
+                className="rounded-full px-8 gap-2"
+                onClick={handleFollow}
+              >
+                <UserPlus className="w-4 h-4" />
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+              <Button variant="outline" className="rounded-full px-6 gap-2" onClick={handleShare}>
+                <Share2 className="w-4 h-4" />
+                Share
+              </Button>
+            </div>
+          )}
+        </motion.div>
 
         {/* Social Links */}
-        {displayProfile.socialLinks && Object.values(displayProfile.socialLinks).some(link => link) && (
-          <div className="bg-card rounded-2xl border border-border/40 p-6 mt-4">
-            <h3 className="text-sm font-semibold mb-4">Social Links</h3>
-            <div className="flex flex-wrap gap-3">
-              {displayProfile.socialLinks.instagram && (
-                <a 
-                  href={displayProfile.socialLinks.instagram} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Instagram"
-                >
-                  <Instagram className="w-5 h-5" />
-                </a>
-              )}
-              {displayProfile.socialLinks.twitter && (
-                <a 
-                  href={displayProfile.socialLinks.twitter} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Twitter"
-                >
-                  <Twitter className="w-5 h-5" />
-                </a>
-              )}
-              {displayProfile.socialLinks.youtube && (
-                <a 
-                  href={displayProfile.socialLinks.youtube} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="YouTube"
-                >
-                  <Youtube className="w-5 h-5" />
-                </a>
-              )}
- 
-              {displayProfile.socialLinks.spotify && (
-                <a 
-                  href={displayProfile.socialLinks.spotify} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Spotify"
-                >
-                  <Music className="w-5 h-5" />
-                </a>
-              )}
-              {displayProfile.socialLinks.website && (
-                <a 
-                  href={displayProfile.socialLinks.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Website"
-                >
-                  <Link2 className="w-5 h-5" />
-                </a>
-              )}
-            </div>
-          </div>
+        {hasSocialLinks && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="flex justify-center gap-3 mb-8"
+          >
+            {displayProfile.socialLinks?.instagram && (
+              <a 
+                href={displayProfile.socialLinks.instagram} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
+                title="Instagram"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+            )}
+            {displayProfile.socialLinks?.twitter && (
+              <a 
+                href={displayProfile.socialLinks.twitter} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
+                title="Twitter"
+              >
+                <Twitter className="w-5 h-5" />
+              </a>
+            )}
+            {displayProfile.socialLinks?.youtube && (
+              <a 
+                href={displayProfile.socialLinks.youtube} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
+                title="YouTube"
+              >
+                <Youtube className="w-5 h-5" />
+              </a>
+            )}
+            {displayProfile.socialLinks?.spotify && (
+              <a 
+                href={displayProfile.socialLinks.spotify} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
+                title="Spotify"
+              >
+                <Music className="w-5 h-5" />
+              </a>
+            )}
+            {displayProfile.socialLinks?.website && (
+              <a 
+                href={displayProfile.socialLinks.website} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
+                title="Website"
+              >
+                <Link2 className="w-5 h-5" />
+              </a>
+            )}
+          </motion.div>
         )}
 
         {/* Playlists Section */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="space-y-4"
+        >
+          <div className="flex items-center gap-2 text-muted-foreground border-b border-border pb-3">
             <Grid3X3 className="w-4 h-4" />
-            <span className="text-sm font-medium">Playlists</span>
+            <span className="text-sm font-medium uppercase tracking-wide">Playlists</span>
           </div>
 
           {loadingPlaylists ? (
             <PlaylistGridSkeleton count={4} />
           ) : userPlaylists.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-muted flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
                 <Music className="w-7 h-7 text-muted-foreground" />
               </div>
               <p className="text-muted-foreground font-medium">No playlists yet</p>
               {isOwnProfile && (
-                <Button className="mt-4" onClick={() => navigate("/playlist/create")}>
+                <Button className="mt-4 rounded-full" onClick={() => navigate("/playlist/create")}>
                   Create your first playlist
                 </Button>
               )}
             </div>
           ) : (
-            <div className="columns-2 md:columns-3 gap-3 space-y-3">
-              {userPlaylists.map((playlist) => (
-                <div 
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {userPlaylists.map((playlist, index) => (
+                <motion.div 
                   key={playlist.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.05 }}
                   onClick={() => navigate(`/playlist/${playlist.id}`)}
-                  className="break-inside-avoid cursor-pointer group"
+                  className="cursor-pointer group"
                 >
-                  <div className="bg-card rounded-xl border border-border/40 overflow-hidden hover:border-primary/30 transition-all">
-                    <div className={`aspect-square bg-gradient-to-br ${playlist.coverGradient} flex items-center justify-center`}>
-                      {playlist.thumbnailUrl || playlist.songs?.[0]?.thumbnail ? (
-                        <img 
-                          src={playlist.thumbnailUrl || playlist.songs[0].thumbnail} 
-                          alt={playlist.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Link2 className="w-10 h-10 text-white/30" />
-                      )}
-                    </div>
-                    <div className="p-3">
-                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                        {playlist.title}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {playlist.songCount || playlist.songs?.length || 0} songs
-                      </p>
-                    </div>
+                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-2 bg-secondary">
+                    {playlist.thumbnailUrl || playlist.songs?.[0]?.thumbnail ? (
+                      <img 
+                        src={playlist.thumbnailUrl || playlist.songs[0].thumbnail} 
+                        alt={playlist.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className={`w-full h-full bg-gradient-to-br ${playlist.coverGradient || 'from-primary/50 to-accent/50'} flex items-center justify-center`}>
+                        <Music className="w-10 h-10 text-white/50" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </div>
-                </div>
+                  <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                    {playlist.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {playlist.songCount || playlist.songs?.length || 0} songs
+                  </p>
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );
