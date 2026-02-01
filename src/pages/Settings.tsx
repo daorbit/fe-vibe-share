@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button, message, Modal, Typography } from "antd";
-import { ArrowLeft, Check, Download, Palette, Shield, Trash2, Volume2 } from "lucide-react";
+import { ArrowLeft, Check, Download, Palette, Shield, Trash2, Volume2, Sparkles } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { setSoundEnabled } from "@/store/slices/uiSlice";
 import useTheme, { themes, ThemeColor } from "@/hooks/useTheme";
 import { Switch } from "@/components/ui/switch";
 import usePWAInstall from "@/hooks/usePWAInstall";
+import { useState } from "react";
 
 const { Title, Text } = Typography;
 
@@ -14,8 +15,9 @@ const Settings = () => {
   const dispatch = useAppDispatch();
   const currentUser = useAppSelector((s) => s.auth.user);
   const soundEnabled = useAppSelector((s) => s.ui.soundEnabled);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, customColor, setCustomColor } = useTheme();
   const { isInstallable, isInstalled } = usePWAInstall();
+  const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   const handleChangePassword = () => {
     message.info("Change password coming soon!");
@@ -34,7 +36,7 @@ const Settings = () => {
 
   if (!currentUser) return null;
 
-  const themeColors = Object.entries(themes) as [ThemeColor, typeof themes.orange][];
+  const themeColors = Object.entries(themes).filter(([key]) => key !== 'custom') as [ThemeColor, typeof themes.orange][];
 
   return (
     <div className="min-h-screen">
@@ -76,6 +78,34 @@ const Settings = () => {
                 )}
               </button>
             ))}
+          </div>
+          
+          {/* Custom Color Picker */}
+          <div className="bg-secondary/50 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Text strong className="text-sm">Custom Color</Text>
+              </div>
+              {theme === 'custom' && (
+                <div className="flex items-center gap-1 text-xs text-primary">
+                  <Check className="w-3 h-3" />
+                  <span>Active</span>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={customColor}
+                onChange={(e) => setCustomColor(e.target.value)}
+                className="w-12 h-12 rounded-lg cursor-pointer border-2 border-border"
+                style={{ padding: '2px' }}
+              />
+              <div className="flex-1">
+                <Text className="block text-sm">Choose your own accent color</Text>
+                <Text type="secondary" className="text-xs">Pick any color to personalize your experience</Text>
+              </div>
+            </div>
           </div>
         </div>
 

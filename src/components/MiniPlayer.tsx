@@ -166,7 +166,7 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
           "fixed z-50 bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl transition-all overflow-hidden",
           isExpanded 
             ? "inset-3 md:inset-6 rounded-2xl" 
-            : "bottom-20 left-3 right-3 md:left-auto md:right-4 md:bottom-4 md:w-[360px] rounded-2xl",
+            : "bottom-24 left-3 right-3 md:left-auto md:right-4 md:bottom-4 md:w-[360px] rounded-2xl",
           isDragging && "transition-none"
         )}
         style={!isExpanded ? { transform: `translate(${position.x}px, ${position.y}px)` } : undefined}
@@ -199,22 +199,30 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
             </div>
           )}
           
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{currentSong.title}</p>
-            <p className="text-xs text-muted-foreground truncate">{currentSong.artist}</p>
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            {/* Music Playing Indicator */}
+            <div className="flex items-end gap-0.5 h-4 flex-shrink-0">
+              <div className="w-0.5 bg-primary rounded-full animate-music-bar-1"></div>
+              <div className="w-0.5 bg-primary rounded-full animate-music-bar-2"></div>
+              <div className="w-0.5 bg-primary rounded-full animate-music-bar-3"></div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{currentSong.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{currentSong.artist}</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-0.5">
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowQueue(!showQueue)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={() => setShowQueue(!showQueue)}>
               <List className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setIsExpanded(!isExpanded)}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={() => setIsExpanded(!isExpanded)}>
               {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleOpenExternal}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={handleOpenExternal}>
               <ExternalLink className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+            <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={onClose}>
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -265,9 +273,9 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
                       key={song.id}
                       onClick={() => onChangeIndex(index)}
                       className={cn(
-                        "w-full flex items-center gap-2 p-2 rounded-lg text-left transition-colors",
+                        "w-full flex items-center gap-2 p-2 rounded-lg text-left transition-all duration-200 hover:scale-[1.02] active:scale-95",
                         index === currentIndex 
-                          ? "bg-primary/10 text-primary" 
+                          ? "bg-primary/10 text-primary animate-in slide-in-from-left-2 duration-200" 
                           : "hover:bg-muted/50"
                       )}
                     >
@@ -299,14 +307,14 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
               size="sm"
               onClick={handlePrev}
               disabled={currentIndex === 0}
-              className="gap-1"
+              className="gap-1 hover:scale-105 active:scale-95 transition-transform disabled:hover:scale-100"
             >
               <SkipBack className="w-4 h-4" />
               <span className="hidden sm:inline text-xs">Prev</span>
             </Button>
             
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <span>{currentIndex + 1}</span>
+              <span className="font-medium text-primary">{currentIndex + 1}</span>
               <span>/</span>
               <span>{songs.length}</span>
             </div>
@@ -316,7 +324,7 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
               size="sm"
               onClick={handleNext}
               disabled={currentIndex === songs.length - 1}
-              className="gap-1"
+              className="gap-1 hover:scale-105 active:scale-95 transition-transform disabled:hover:scale-100"
             >
               <span className="hidden sm:inline text-xs">Next</span>
               <SkipForward className="w-4 h-4" />

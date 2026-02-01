@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login, clearError } from "@/store/slices/authSlice";
 import { Input } from "@/components/ui/input";
@@ -35,10 +36,21 @@ const SignIn = () => {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="p-4 md:p-6">
-        <Link to="/" className="flex items-center gap-2 w-fit">
-          <img src="/logo.png" alt="Now Music" className="w-8 h-8 rounded-lg object-cover" />
-          <span className="font-semibold text-foreground">Now Music</span>
-        </Link>
+        <div className="flex items-center justify-between max-w-md mx-auto">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center group-hover:bg-secondary/80 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+          </button>
+          <Link to="/" className="flex items-center gap-2">
+            <img src="/logo.png" alt="Now Music" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="font-semibold text-foreground">Now Music</span>
+          </Link>
+          <div className="w-16"></div>
+        </div>
       </header>
 
       {/* Main Content */}

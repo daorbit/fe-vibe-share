@@ -27,9 +27,13 @@ const FloatingNav = () => {
               key={item.to}
               to={item.to}
               end={item.to === "/"}
+              onClick={() => {
+                playSound('tap');
+                triggerHaptic('light');
+              }}
               className={({ isActive }) =>
                 cn(
-                  "flex flex-col items-center gap-1 px-6 py-1.5 rounded-[1.5rem] transition-all duration-300",
+                  "flex flex-col items-center gap-1 px-6 py-1.5 rounded-[1.5rem] transition-all duration-300 active:scale-95",
                   isActive
                     ? "bg-foreground/5"
                     : "hover:bg-foreground/5"
@@ -40,15 +44,15 @@ const FloatingNav = () => {
                 <>
                   <Icon 
                     className={cn(
-                      "w-5 h-5 transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground"
+                      "w-5 h-5 transition-all duration-300",
+                      isActive ? "text-primary animate-in zoom-in-50 duration-200" : "text-muted-foreground"
                     )} 
                     strokeWidth={isActive ? 2.5 : 2} 
                     fill={isActive ? "currentColor" : "none"}
                   />
                   <span className={cn(
-                    "text-[10px] font-medium transition-colors",
-                    isActive ? "text-foreground" : "text-muted-foreground"
+                    "text-[10px] font-medium transition-all duration-300",
+                    isActive ? "text-foreground animate-in fade-in-50 slide-in-from-bottom-1 duration-200" : "text-muted-foreground"
                   )}>
                     {item.label}
                   </span>
@@ -65,9 +69,9 @@ const FloatingNav = () => {
             triggerHaptic('medium');
             navigate(isLoggedIn ? "/playlist/create" : "/sign-in");
           }}
-          className="w-11 h-11 ml-1 rounded-full bg-primary flex items-center justify-center text-primary-foreground transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
+          className="w-11 h-11 ml-1 rounded-full bg-primary flex items-center justify-center text-primary-foreground transition-all duration-200 hover:scale-110 hover:rotate-90 active:scale-95 shadow-lg animate-pulse-slow"
         >
-          <Plus className="w-5 h-5" strokeWidth={2.5} />
+          <Plus className="w-5 h-5 transition-transform duration-200" strokeWidth={2.5} />
         </button>
       </div>
     </nav>

@@ -6,6 +6,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { PlaylistProvider } from "./contexts/PlaylistContext";
 import { SocialProvider } from "./contexts/SocialContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { WelcomeProvider } from "./contexts/WelcomeContext";
 import AuthInitializer from "./components/AuthInitializer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 
@@ -29,11 +30,13 @@ const App = () => (
         <Analytics />
         <AuthInitializer>
           <AuthProvider>
-            <PlaylistProvider>
-              <SocialProvider>
-                <AnimatedRoutes />
-              </SocialProvider>
-            </PlaylistProvider>
+            <WelcomeProvider>
+              <PlaylistProvider>
+                <SocialProvider>
+                  <AnimatedRoutes />
+                </SocialProvider>
+              </PlaylistProvider>
+            </WelcomeProvider>
           </AuthProvider>
         </AuthInitializer>
       </BrowserRouter>

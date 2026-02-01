@@ -385,6 +385,7 @@ const CreatePlaylist = ({ initialData, onSubmit }: CreatePlaylistProps = {}) => 
         isOpen={showAddSong}
         onClose={() => setShowAddSong(false)}
         onAdd={handleAddSong}
+        existingSongs={songs}
       />
     </div>
   );

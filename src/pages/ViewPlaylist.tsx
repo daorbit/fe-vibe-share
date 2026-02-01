@@ -255,7 +255,6 @@ const ViewPlaylist = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-[140px]">
               <DropdownMenuItem onClick={handleShare}>Copy Link</DropdownMenuItem>
-              <DropdownMenuItem>Report</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -437,11 +436,18 @@ const ViewPlaylist = () => {
                       </div>
                     )}
                     
-                    {/* Play Button - Always Visible */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center">
+                    {/* Play Button - Show on Hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="w-11 h-11 rounded-full bg-primary/90 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-black/30 group-hover:scale-110 transition-transform duration-300">
                         <Play className="w-5 h-5 text-primary-foreground fill-current ml-0.5" />
                       </div>
+                    </div>
+
+                    {/* Platform Badge - Top Right */}
+                    <div className="absolute top-2 right-2">
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide ${getPlatformColor(song.platform)}`}>
+                        {song.platform}
+                      </span>
                     </div>
 
                     {/* Track Number Badge */}
@@ -459,13 +465,6 @@ const ViewPlaylist = () => {
 
                   {/* Info */}
                   <div className="p-2.5">
-                    {/* Platform Badge */}
-                    <div className="mb-1.5">
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide ${getPlatformColor(song.platform)}`}>
-                        {song.platform}
-                      </span>
-                    </div>
-
                     {/* Title & Artist */}
                     <p className="text-xs font-semibold truncate mb-0.5 group-hover:text-primary transition-colors">
                       {song.title}

@@ -465,3 +465,90 @@
     -webkit-tap-highlight-color: transparent;
   }
 }
+
+/* Floating animation for welcome drawer */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-15px) rotate(5deg);
+  }
+  50% {
+    transform: translateY(-25px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+}
+
+/* Pulse animation for music playing */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Music bars animation */
+@keyframes music-bar-1 {
+  0%, 100% {
+    height: 20%;
+  }
+  50% {
+    height: 80%;
+  }
+}
+
+@keyframes music-bar-2 {
+  0%, 100% {
+    height: 40%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+
+@keyframes music-bar-3 {
+  0%, 100% {
+    height: 60%;
+  }
+  50% {
+    height: 70%;
+  }
+}
+
+/* Scale bounce animation */
+@keyframes scale-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Custom animation utilities */
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  .animate-music-bar-1 {
+    animation: music-bar-1 0.8s ease-in-out infinite;
+  }
+  
+  .animate-music-bar-2 {
+    animation: music-bar-2 0.9s ease-in-out infinite;
+  }
+  
+  .animate-music-bar-3 {
+    animation: music-bar-3 0.7s ease-in-out infinite;
+  }
+  
+  .animate-scale-bounce {
+    animation: scale-bounce 2s ease-in-out infinite;
+  }
+}

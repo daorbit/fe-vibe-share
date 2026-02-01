@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type ThemeColor = 'orange' | 'blue' | 'green' | 'pink' | 'purple' | 'red' | 'teal' | 'amber' | 'indigo' | 'slate';
+export type ThemeColor = 'orange' | 'blue' | 'green' | 'pink' | 'purple' | 'red' | 'teal' | 'amber' | 'indigo' | 'slate' | 'custom';
 
 interface ThemeConfig {
   name: string;
@@ -11,6 +11,38 @@ interface ThemeConfig {
     accent: string;
     ring: string;
   };
+}
+
+// Helper function to convert hex to HSL
+function hexToHSL(hex: string): string {
+  // Remove # if present
+  hex = hex.replace(/^#/, '');
+  
+  // Parse hex values
+  const r = parseInt(hex.substring(0, 2), 16) / 255;
+  const g = parseInt(hex.substring(2, 4), 16) / 255;
+  const b = parseInt(hex.substring(4, 6), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0, s = 0, l = (max + min) / 2;
+  
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  
+  h = Math.round(h * 360);
+  s = Math.round(s * 100);
+  l = Math.round(l * 100);
+  
+  return `${h} ${s}% ${l}%`;
 }
 
 export const themes: Record<ThemeColor, ThemeConfig> = {
@@ -114,9 +146,20 @@ export const themes: Record<ThemeColor, ThemeConfig> = {
       ring: '215 16% 47%',
     },
   },
+  custom: {
+    name: 'Custom',
+    primary: '#ea580c',
+    accent: '#f59e0b',
+    cssVars: {
+      primary: '16 90% 55%',
+      accent: '35 100% 55%',
+      ring: '16 90% 55%',
+    },
+  },
 };
 
 const THEME_STORAGE_KEY = 'Now Music-theme';
+const CUSTOM_COLOR_KEY = 'Now Music-custom-color';
 
 export const useTheme = () => {
   const [theme, setThemeState] = useState<ThemeColor>(() => {
@@ -124,8 +167,33 @@ export const useTheme = () => {
     return (stored as ThemeColor) || 'orange';
   });
 
-  const applyTheme = useCallback((themeColor: ThemeColor) => {
-    const config = themes[themeColor];
+  const [customColor, setCustomColorState] = useState<string>(() => {
+    return localStorage.getItem(CUSTOM_COLOR_KEY) || '#ea580c';
+  });
+
+  const applyTheme = useCallback((themeColor: ThemeColor, customHex?: string) => {
+    let config = themes[themeColor];
+    
+    // If custom theme, generate config from hex color
+    if (themeColor === 'custom' && customHex) {
+      const hsl = hexToHSL(customHex);
+      // Create a lighter accent by increasing lightness
+      const [h, s, l] = hsl.split(' ');
+      const lightness = parseInt(l);
+      const accentHsl = `${h} ${s} ${Math.min(lightness + 15, 85)}%`;
+      
+      config = {
+        ...config,
+        primary: customHex,
+        accent: customHex,
+        cssVars: {
+          primary: hsl,
+          accent: accentHsl,
+          ring: hsl,
+        },
+      };
+    }
+    
     const root = document.documentElement;
     
     root.style.setProperty('--primary', config.cssVars.primary);
@@ -136,15 +204,21 @@ export const useTheme = () => {
   }, []);
 
   useEffect(() => {
-    applyTheme(theme);
-  }, [theme, applyTheme]);
+    applyTheme(theme, customColor);
+  }, [theme, customColor, applyTheme]);
 
   const setTheme = useCallback((newTheme: ThemeColor) => {
     setThemeState(newTheme);
     localStorage.setItem(THEME_STORAGE_KEY, newTheme);
   }, []);
 
-  return { theme, setTheme, themes };
+  const setCustomColor = useCallback((color: string) => {
+    setCustomColorState(color);
+    localStorage.setItem(CUSTOM_COLOR_KEY, color);
+    setTheme('custom');
+  }, [setTheme]);
+
+  return { theme, setTheme, themes, customColor, setCustomColor };
 };
 
 export default useTheme;

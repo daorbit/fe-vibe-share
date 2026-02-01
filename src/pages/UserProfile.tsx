@@ -218,18 +218,7 @@ const UserProfile = () => {
             </div>
           ) : (
             <div className="flex gap-3 justify-center">
-              <Button 
-                variant={isFollowing ? "outline" : "default"}
-                className="rounded-full px-8 gap-2"
-                onClick={handleFollow}
-              >
-                <UserPlus className="w-4 h-4" />
-                {isFollowing ? "Following" : "Follow"}
-              </Button>
-              <Button variant="outline" className="rounded-full px-6 gap-2" onClick={handleShare}>
-                <Share2 className="w-4 h-4" />
-                Share
-              </Button>
+              
             </div>
           )}
         </motion.div>

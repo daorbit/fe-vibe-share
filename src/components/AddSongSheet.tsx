@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link2, Loader2, Music, CheckCircle2 } from "lucide-react";
+import { Link2, Loader2, Music, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { detectPlatform, getPlatformThumbnail, getPlatformColor, getPlatformIcon } from "@/lib/songUtils";
@@ -9,6 +9,7 @@ interface AddSongSheetProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (song: Omit<SongLink, "id">) => void;
+  existingSongs?: Array<Omit<SongLink, "id"> & { id?: string }>;
 }
 
 const fetchYouTubeInfo = async (url: string): Promise<{ title: string; author: string } | null> => {
@@ -28,13 +29,15 @@ const fetchYouTubeInfo = async (url: string): Promise<{ title: string; author: s
   return null;
 };
 
-const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
+const AddSongSheet = ({ isOpen, onClose, onAdd, existingSongs = [] }: AddSongSheetProps) => {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
   const [autoFetched, setAutoFetched] = useState(false);
+  const [isDuplicate, setIsDuplicate] = useState(false);
+  const [duplicateSong, setDuplicateSong] = useState<{ title: string; artist: string } | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -43,8 +46,32 @@ const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
       setArtist("");
       setThumbnail(null);
       setAutoFetched(false);
+      setIsDuplicate(false);
+      setDuplicateSong(null);
     }
   }, [isOpen]);
+
+  // Check for duplicates when URL changes
+  useEffect(() => {
+    if (!url.trim()) {
+      setIsDuplicate(false);
+      setDuplicateSong(null);
+      return;
+    }
+
+    const normalizedUrl = url.trim().toLowerCase();
+    const duplicate = existingSongs.find(
+      (song) => song.url.trim().toLowerCase() === normalizedUrl
+    );
+
+    if (duplicate) {
+      setIsDuplicate(true);
+      setDuplicateSong(duplicate);
+    } else {
+      setIsDuplicate(false);
+      setDuplicateSong(null);
+    }
+  }, [url, existingSongs]);
 
   useEffect(() => {
     const fetchInfo = async () => {
@@ -81,7 +108,7 @@ const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
   }, [url, autoFetched]);
 
   const handleSubmit = () => {
-    if (!url.trim() || !title.trim()) return;
+    if (!url.trim() || !title.trim() || isDuplicate) return;
 
     const platform = detectPlatform(url);
     onAdd({
@@ -95,7 +122,7 @@ const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
   };
 
   const platform = url ? detectPlatform(url) : null;
-  const isValid = url.trim() && title.trim();
+  const isValid = url.trim() && title.trim() && !isDuplicate;
 
   if (!isOpen) return null;
 
@@ -197,6 +224,19 @@ const AddSongSheet = ({ isOpen, onClose, onAdd }: AddSongSheetProps) => {
               />
             </div>
           </div>
+
+          {/* Duplicate Warning */}
+          {isDuplicate && duplicateSong && (
+            <div className="flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-destructive text-xs">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold">Song already in playlist</p>
+                <p className="text-destructive/80 mt-0.5">
+                  "{duplicateSong.title}" by {duplicateSong.artist}
+                </p>
+              </div>
+            </div>
+          )}
 
           {autoFetched && !isFetching && (
             <div className="flex items-center gap-1.5 text-primary text-xs">

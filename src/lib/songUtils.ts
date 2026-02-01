@@ -23,7 +23,7 @@ export const extractYouTubeId = (url: string): string | null => {
 export const getYouTubeThumbnail = (url: string): string | null => {
   const videoId = extractYouTubeId(url);
   if (videoId) {
-    return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   }
   return null;
 };

@@ -165,7 +165,7 @@ const Search = () => {
     <div className="min-h-screen pb-20 md:pb-8">
       {/* Header with Search */}
       <header className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="px-4 py-3">
+        <div className="max-w-lg mx-auto px-4 py-3">
           <h1 className="text-xl font-bold mb-3">Search</h1>
           
           <form onSubmit={handleSearchSubmit} className="relative">
@@ -191,7 +191,7 @@ const Search = () => {
 
         {/* Filter Tabs */}
         {isSearching && (
-          <div className="flex border-b border-border px-4 gap-2 overflow-x-auto">
+          <div className="flex border-b border-border max-w-lg mx-auto px-4 gap-2 overflow-x-auto">
             {[
               { key: "all", label: "All" },
               { key: "users", label: "Users", icon: Users },
@@ -215,7 +215,7 @@ const Search = () => {
         )}
       </header>
 
-      <div className="px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-6">
         {!isSearching ? (
           <>
             {/* Recent Searches */}
@@ -352,8 +352,22 @@ const Search = () => {
                           }}
                           className="cursor-pointer group"
                         >
-                          <div className={`aspect-square rounded-xl bg-gradient-to-br ${playlist.coverGradient} mb-2 flex items-center justify-center transition-transform group-hover:scale-[1.02]`}>
-                            <Link2 className="w-8 h-8 text-white/30" />
+                          <div className={`aspect-square rounded-xl overflow-hidden mb-2 transition-transform group-hover:scale-[1.02] ${!playlist.thumbnailUrl ? `bg-gradient-to-br ${playlist.coverGradient || 'from-purple-800 to-pink-900'}` : ''}`}>
+                            {playlist.thumbnailUrl ? (
+                              <img 
+                                src={playlist.thumbnailUrl} 
+                                alt={playlist.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.parentElement.classList.add('bg-gradient-to-br', playlist.coverGradient || 'from-purple-800', 'to-pink-900', 'flex', 'items-center', 'justify-center');
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Link2 className="w-8 h-8 text-white/30" />
+                              </div>
+                            )}
                           </div>
                           <p className="text-sm font-medium truncate">{playlist.title}</p>
                           <p className="text-xs text-muted-foreground">

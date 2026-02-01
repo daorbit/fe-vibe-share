@@ -166,7 +166,6 @@ const PlaylistPost = ({
     : description;
 
   const menuItems = [
-    { key: 'report', label: 'Report' },
     { key: 'copyLink', label: 'Copy Link' },
   ];
 
@@ -283,7 +282,7 @@ const PlaylistPost = ({
             type="button"
             onClick={handleLike}
             disabled={isLiking}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-full transition-all duration-300 touch-manipulation min-h-[44px] ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation ${
               isLikedState 
                 ? "bg-red-500/10 text-red-500" 
                 : "bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground"
@@ -297,7 +296,7 @@ const PlaylistPost = ({
           <button 
             type="button"
             onClick={handleShare}
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
+            className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
           >
             <Share2 className="w-4 h-4" />
           </button>
@@ -306,7 +305,7 @@ const PlaylistPost = ({
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 touch-manipulation ${
+          className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 touch-manipulation ${
             isSavedState 
               ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25" 
               : "bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground"
