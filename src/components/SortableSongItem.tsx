@@ -8,9 +8,10 @@ interface SortableSongItemProps {
   song: Omit<SongLink, "id"> & { tempId: string };
   index: number;
   onRemove: () => void;
+  confirmBeforeRemove?: boolean;
 }
 
-const SortableSongItem = ({ song, index, onRemove }: SortableSongItemProps) => {
+const SortableSongItem = ({ song, index, onRemove, confirmBeforeRemove = false }: SortableSongItemProps) => {
   const {
     attributes,
     listeners,

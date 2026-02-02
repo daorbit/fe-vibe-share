@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, MoreHorizontal, Grid3X3, Link2, Users, Share2, Music, Instagram, Twitter, Youtube, UserPlus, MessageCircle } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Grid3X3, Users, Music } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { usePlaylist, Playlist } from "@/contexts/PlaylistContext";
 import { usersAPI } from "@/lib/api";
@@ -171,7 +171,7 @@ const UserProfile = () => {
         </div>
       </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-lg mx-auto px-4 py-8">
         {/* Profile Hero */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -179,126 +179,53 @@ const UserProfile = () => {
           className="text-center mb-8"
         >
           {/* Avatar */}
-          <div className="relative inline-block mb-4">
+          <div className="relative inline-block mb-5">
             <UserAvatar 
               avatarUrl={displayProfile.avatarUrl} 
-              size={100} 
-              className="shadow-2xl ring-4 ring-primary/20 ring-offset-4 ring-offset-background" 
+              size={96} 
+              className="ring-[3px] ring-primary/60" 
             />
-            {!isOwnProfile && (
-              <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary flex items-center justify-center shadow-lg">
-                <Music className="w-4 h-4 text-primary-foreground" />
-              </div>
-            )}
+            <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center shadow-lg">
+              <Music className="w-3.5 h-3.5 text-primary-foreground" />
+            </div>
           </div>
 
           {/* Name & Bio */}
-          <h1 className="text-2xl font-bold mb-1">{displayProfile.username}</h1>
+          <h1 className="text-xl font-bold mb-1">{displayProfile.username}</h1>
           {displayProfile.bio && (
-            <p className="text-muted-foreground max-w-xs mx-auto mb-4">{displayProfile.bio}</p>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto mb-5">{displayProfile.bio}</p>
           )}
 
           {/* Stats */}
-          <div className="flex items-center justify-center gap-8 mb-6">
+          <div className="flex items-center justify-center mb-6">
             <div className="text-center">
-              <p className="text-2xl font-bold">{displayProfile.playlistCount}</p>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide">Playlists</p>
+              <p className="text-lg font-bold">{userPlaylists.length}</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Playlists</p>
             </div>
           </div>
 
-          {/* Actions */}
-          {isOwnProfile ? (
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" className="rounded-full px-6" onClick={() => navigate("/edit-profile")}>
+          {/* Actions - Only for own profile */}
+          {isOwnProfile && (
+            <div className="flex gap-2 justify-center">
+              <Button variant="outline" size="sm" className="rounded-full px-5 h-9" onClick={() => navigate("/edit-profile")}>
                 Edit Profile
               </Button>
-              <Button className="rounded-full px-6" onClick={() => navigate("/playlist/create")}>
+              <Button size="sm" className="rounded-full px-5 h-9" onClick={() => navigate("/playlist/create")}>
                 Create Playlist
               </Button>
             </div>
-          ) : (
-            <div className="flex gap-3 justify-center">
-              
-            </div>
           )}
         </motion.div>
-
-        {/* Social Links */}
-        {hasSocialLinks && (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex justify-center gap-3 mb-8"
-          >
-            {displayProfile.socialLinks?.instagram && (
-              <a 
-                href={displayProfile.socialLinks.instagram} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
-                title="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-            )}
-            {displayProfile.socialLinks?.twitter && (
-              <a 
-                href={displayProfile.socialLinks.twitter} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
-                title="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
-            )}
-            {displayProfile.socialLinks?.youtube && (
-              <a 
-                href={displayProfile.socialLinks.youtube} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
-                title="YouTube"
-              >
-                <Youtube className="w-5 h-5" />
-              </a>
-            )}
-            {displayProfile.socialLinks?.spotify && (
-              <a 
-                href={displayProfile.socialLinks.spotify} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
-                title="Spotify"
-              >
-                <Music className="w-5 h-5" />
-              </a>
-            )}
-            {displayProfile.socialLinks?.website && (
-              <a 
-                href={displayProfile.socialLinks.website} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-11 h-11 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-all flex items-center justify-center"
-                title="Website"
-              >
-                <Link2 className="w-5 h-5" />
-              </a>
-            )}
-          </motion.div>
-        )}
 
         {/* Playlists Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-4"
+          transition={{ delay: 0.15 }}
         >
-          <div className="flex items-center gap-2 text-muted-foreground border-b border-border pb-3">
+          <div className="flex items-center gap-2 text-muted-foreground border-t border-border pt-4 mb-4">
             <Grid3X3 className="w-4 h-4" />
-            <span className="text-sm font-medium uppercase tracking-wide">Playlists</span>
+            <span className="text-xs font-medium uppercase tracking-wider">Playlists</span>
           </div>
 
           {loadingPlaylists ? (
@@ -316,17 +243,17 @@ const UserProfile = () => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {userPlaylists.map((playlist, index) => (
                 <motion.div 
                   key={playlist.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.05 }}
                   onClick={() => navigate(`/playlist/${playlist.id}`)}
                   className="cursor-pointer group"
                 >
-                  <div className="relative aspect-square rounded-2xl overflow-hidden mb-2 bg-secondary">
+                  <div className="relative aspect-square rounded-xl overflow-hidden mb-2 bg-secondary">
                     {playlist.thumbnailUrl || playlist.songs?.[0]?.thumbnail ? (
                       <img 
                         src={playlist.thumbnailUrl || playlist.songs[0].thumbnail} 
@@ -338,7 +265,6 @@ const UserProfile = () => {
                         <Music className="w-10 h-10 text-white/50" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                   </div>
                   <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
                     {playlist.title}

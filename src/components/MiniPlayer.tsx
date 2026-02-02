@@ -22,7 +22,7 @@ const getEmbedUrl = (url: string, platform: string): string | null => {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match?.[1]) {
-        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&rel=0`;
+        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1`;
       }
     }
   }
@@ -237,8 +237,7 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
             showQueue && !isExpanded && "hidden"
           )}>
             {embedUrl ? (
-              <iframe
-                src={embedUrl}
+              <iframe                key={currentSong.id || currentIndex}                src={embedUrl}
                 className="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen

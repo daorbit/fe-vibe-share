@@ -40,6 +40,8 @@ const EditPlaylist = () => {
   const [deleteType, setDeleteType] = useState<'playlist' | 'songs' | null>(null);
   const [songsToDelete, setSongsToDelete] = useState<string[]>([]);
   const [pendingPayload, setPendingPayload] = useState<any>(null);
+  const [songToDeleteNow, setSongToDeleteNow] = useState<string | null>(null);
+  const [showSongDeleteConfirmation, setShowSongDeleteConfirmation] = useState(false);
 
   useEffect(() => {
     if (!id) return navigate('/profile');
@@ -62,16 +64,8 @@ const EditPlaylist = () => {
   }, [id, navigate, getPlaylist]);
 
   const proceedWithSubmit = async (payload: any, removedSongIds: string[]) => {
-    // Delete songs
-    for (const songId of removedSongIds) {
-      try {
-        await playlistsAPI.deleteSong(songId);
-      } catch (err) {
-        console.error(`Failed to delete song ${songId}:`, err);
-        // continue deleting others but show a toast
-        toast.error('Some songs could not be removed');
-      }
-    }
+    // Songs are already deleted via API when user clicks delete button
+    // No need to delete them again here
 
     // add new songs (those without an id)
     const newSongs = (payload.songs || []).filter((s: any) => !s.id);
@@ -118,6 +112,7 @@ const EditPlaylist = () => {
         description: payload.description,
         coverGradient: payload.coverGradient,
         tags: payload.tags,
+        isPublic: payload.isPublic,
       });
 
       // Delete songs that were removed in the editor
@@ -125,14 +120,7 @@ const EditPlaylist = () => {
       const currentSongIds: string[] = (payload.songs || []).map((s: any) => s.id).filter(Boolean);
       const removedSongIds = originalSongIds.filter((sid) => !currentSongIds.includes(sid));
 
-      if (removedSongIds.length > 0) {
-        setSongsToDelete(removedSongIds);
-        setPendingPayload(payload);
-        setDeleteType('songs');
-        setShowDeleteConfirmation(true);
-        return; // Wait for confirmation
-      }
-
+      // No confirmation needed on save - user already confirmed when deleting each song
       await proceedWithSubmit(payload, removedSongIds);
     } catch (err) {
       console.error('Failed to save playlist:', err);
@@ -194,8 +182,10 @@ const EditPlaylist = () => {
           tags: playlist.tags || [],
           songs: playlist.songs || [],
           thumbnailUrl: playlist.thumbnailUrl || null,
+          isPublic: playlist.isPublic ?? true,
         }}
         onSubmit={handleSubmit}
+        confirmBeforeDelete={true}
       />
 
       {/* Delete action placed below the form so user can delete here as well */}

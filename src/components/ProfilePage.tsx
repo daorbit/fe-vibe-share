@@ -1,5 +1,4 @@
-import { Settings, Grid3X3, Bookmark, Share2, LogOut, Plus, Edit3, Instagram, Twitter, Youtube, Music, Link2, RefreshCw } from "lucide-react";
-import { Button, Typography, Empty, App } from "antd";
+import { Settings, Grid3X3, Bookmark, Share2, LogOut, Plus, Edit3, Instagram, Twitter, Youtube, Music, Link2, RefreshCw, Lock } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -8,14 +7,13 @@ import { fetchUserPlaylists, fetchSavedPlaylists, isCacheValid, invalidateUserPl
 import { Music2 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { PlaylistGridSkeleton } from "@/components/skeletons";
-
-const { Text, Title } = Typography;
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("playlists");
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { message } = App.useApp();
   
   const { user } = useAppSelector((state) => state.auth);
   const { 
@@ -28,9 +26,10 @@ const ProfilePage = () => {
   } = useAppSelector((state) => state.playlists);
   const isLoggedIn = !!user;
 
-  const currentPlaylists = activeTab === "playlists" ? userPlaylists : savedPlaylists;
+  const publicPlaylists = userPlaylists.filter(p => p.isPublic !== false);
+  const privatePlaylists = userPlaylists.filter(p => p.isPublic === false);
+  const currentPlaylists = activeTab === "playlists" ? publicPlaylists : activeTab === "private" ? privatePlaylists : savedPlaylists;
 
-  // Only fetch if cache is invalid or user changed
   const fetchData = useCallback((force = false) => {
     if (!isLoggedIn || !user?.id) return;
     
@@ -55,13 +54,12 @@ const ProfilePage = () => {
     setIsRefreshing(true);
     try {
       await dispatch(refreshUser()).unwrap();
-      // Force invalidate cache and refetch
       dispatch(invalidateUserPlaylists());
       dispatch(invalidateSavedPlaylists());
       fetchData(true);
-      message.success("Profile refreshed!");
+      toast.success("Profile refreshed!");
     } catch (error) {
-      message.error("Failed to refresh");
+      toast.error("Failed to refresh");
     } finally {
       setIsRefreshing(false);
     }
@@ -70,12 +68,12 @@ const ProfilePage = () => {
   const handleShareProfile = () => {
     const shareUrl = `${window.location.origin}/user/${user?.username}`;
     navigator.clipboard.writeText(shareUrl);
-    message.success("Profile link copied!");
+    toast.success("Profile link copied!");
   };
 
   const handleLogout = async () => {
     await dispatch(logout());
-    message.success("Logged out");
+    toast.success("Logged out");
     navigate("/");
   };
 
@@ -87,165 +85,161 @@ const ProfilePage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
         <UserAvatar avatarUrl={user?.avatarUrl} size={64} className="bg-secondary" />
-        <Title level={5} className="!mb-0">Sign in to see your profile</Title>
-        <Text type="secondary" className="text-sm">Create and manage your playlists</Text>
-        <Button size="small" onClick={() => navigate("/sign-in")} className="!rounded-lg !h-8">
+        <h2 className="text-lg font-semibold">Sign in to see your profile</h2>
+        <p className="text-sm text-muted-foreground">Create and manage your playlists</p>
+        <button 
+          onClick={() => navigate("/sign-in")} 
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium"
+        >
           Sign In
-        </Button>
+        </button>
       </div>
     );
   }
 
-  const tabItems = [
-    { key: "playlists", label: <span className="flex items-center gap-1.5 text-sm"><Grid3X3 className="w-3.5 h-3.5" />Playlists</span> },
-    { key: "saved", label: <span className="flex items-center gap-1.5 text-sm"><Bookmark className="w-3.5 h-3.5" />Saved</span> },
+  const socialLinks = [
+    { key: 'instagram', icon: Instagram, url: user?.socialLinks?.instagram },
+    { key: 'twitter', icon: Twitter, url: user?.socialLinks?.twitter },
+    { key: 'youtube', icon: Youtube, url: user?.socialLinks?.youtube },
+    { key: 'spotify', icon: Music, url: user?.socialLinks?.spotify },
+    { key: 'website', icon: Link2, url: user?.socialLinks?.website },
+  ].filter(link => link.url);
+
+  const tabs = [
+    { key: "playlists", label: "Public", icon: Grid3X3 },
+    { key: "private", label: "Private", icon: Lock, count: privatePlaylists.length },
+    { key: "saved", label: "Saved", icon: Bookmark },
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
-        <div className="flex items-center justify-between px-4 h-12 max-w-lg mx-auto">
-          <Text className="font-medium text-sm">@{user?.username}</Text>
-          <div className="flex items-center gap-0.5">
-            <Button 
-              type="text" 
-              size="small" 
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border/50">
+        <div className="flex items-center justify-between px-4 h-11 max-w-lg mx-auto">
+          <span className="font-semibold text-sm">@{user?.username}</span>
+          <div className="flex items-center gap-1">
+            <button 
               onClick={handleRefresh} 
-              icon={<RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />} 
-              className="!w-8 !h-8" 
               disabled={isRefreshing}
-            />
-            <Button type="text" size="small" onClick={handleShareProfile} icon={<Share2 className="w-4 h-4" />} className="!w-8 !h-8" />
-            <Button type="text" size="small" onClick={() => navigate('/settings')} icon={<Settings className="w-4 h-4" />} className="!w-8 !h-8" />
-            <Button type="text" size="small" onClick={handleLogout} icon={<LogOut className="w-4 h-4" />} className="!w-8 !h-8" />
+              className="p-2 hover:bg-secondary/80 rounded-full transition-colors"
+            >
+              <RefreshCw className={cn("w-[18px] h-[18px]", isRefreshing && "animate-spin")} />
+            </button>
+            <button 
+              onClick={handleShareProfile}
+              className="p-2 hover:bg-secondary/80 rounded-full transition-colors"
+            >
+              <Share2 className="w-[18px] h-[18px]" />
+            </button>
+            <button 
+              onClick={() => navigate('/settings')}
+              className="p-2 hover:bg-secondary/80 rounded-full transition-colors"
+            >
+              <Settings className="w-[18px] h-[18px]" />
+            </button>
+            <button 
+              onClick={handleLogout}
+              className="p-2 hover:bg-secondary/80 rounded-full transition-colors"
+            >
+              <LogOut className="w-[18px] h-[18px]" />
+            </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
-        {/* Profile Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <UserAvatar avatarUrl={user?.avatarUrl} size={90} className="ring-2 ring-primary/20 ring-offset-2 ring-offset-background" />
-          <div className="flex-1">
-            <Title level={5} className="!mb-0">{user?.username}</Title>
-            <Text type="secondary" className="text-[11px] leading-none">{user?.bio || 'No bio yet'}</Text>
-            <div className="flex gap-4 mt-2">
-              <Text className="text-sm"><span className="font-semibold">{userPlaylists.length}</span> playlists</Text>
-              <Text className="text-sm"><span className="font-semibold">{savedPlaylists.length}</span> saved</Text>
+      <div className="max-w-lg mx-auto px-4 py-5">
+        {/* Profile Info */}
+        <div className="flex items-start gap-5 mb-5">
+          <UserAvatar 
+            avatarUrl={user?.avatarUrl} 
+            size={80} 
+            className="ring-2 ring-border ring-offset-2 ring-offset-background shrink-0" 
+          />
+          <div className="flex-1 min-w-0 pt-1">
+            <h1 className="font-semibold text-base truncate">{user?.username}</h1>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{user?.bio || 'No bio yet'}</p>
+            <div className="flex items-center gap-4 mt-2">
+              <span className="text-sm">
+                <strong>{publicPlaylists.length}</strong>
+                <span className="text-muted-foreground ml-1">playlists</span>
+              </span>
+              <span className="text-sm">
+                <strong>{savedPlaylists.length}</strong>
+                <span className="text-muted-foreground ml-1">saved</span>
+              </span>
             </div>
           </div>
         </div>
 
         {/* Social Links */}
-        {user?.socialLinks && Object.values(user.socialLinks).some(link => link) && (
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-3">
-              {user.socialLinks.instagram && (
-                <a 
-                  href={user.socialLinks.instagram} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Instagram"
-                >
-                  <Instagram className="w-4 h-4" />
-                </a>
-              )}
-              {user.socialLinks.twitter && (
-                <a 
-                  href={user.socialLinks.twitter} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Twitter"
-                >
-                  <Twitter className="w-4 h-4" />
-                </a>
-              )}
-              {user.socialLinks.youtube && (
-                <a 
-                  href={user.socialLinks.youtube} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="YouTube"
-                >
-                  <Youtube className="w-4 h-4" />
-                </a>
-              )}
- 
-              {user.socialLinks.spotify && (
-                <a 
-                  href={user.socialLinks.spotify} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Spotify"
-                >
-                  <Music className="w-4 h-4" />
-                </a>
-              )}
-              {user.socialLinks.website && (
-                <a 
-                  href={user.socialLinks.website} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors flex items-center justify-center"
-                  title="Website"
-                >
-                  <Link2 className="w-4 h-4" />
-                </a>
-              )}
-            </div>
+        {socialLinks.length > 0 && (
+          <div className="flex items-center gap-2 mb-4">
+            {socialLinks.map(({ key, icon: Icon, url }) => (
+              <a
+                key={key}
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-9 h-9 rounded-full bg-secondary/80 hover:bg-secondary flex items-center justify-center transition-colors"
+              >
+                <Icon className="w-4 h-4" />
+              </a>
+            ))}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-2 mb-6">
-          <Button size="small" onClick={() => navigate('/edit-profile')} icon={<Edit3 className="w-3.5 h-3.5" />} className="flex-1 !rounded-[10px] !h-8">
+        {/* Action Buttons */}
+        <div className="flex gap-2 mb-5">
+          <button 
+            onClick={() => navigate('/edit-profile')}
+            className="flex-1 h-9 px-4 bg-secondary hover:bg-secondary/80 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <Edit3 className="w-4 h-4" />
             Edit Profile
-          </Button>
-          <Button size="small" onClick={() => navigate('/playlist/create')} icon={<Plus className="w-3.5 h-3.5" />} className="flex-1 !rounded-[10px] !h-8">
+          </button>
+          <button 
+            onClick={() => navigate('/playlist/create')}
+            className="flex-1 h-9 px-4 bg-secondary hover:bg-secondary/80 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
             New Playlist
-          </Button>
+          </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center justify-between mb-5">
-          <button
-            onClick={() => setActiveTab("playlists")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-[10px] text-sm font-medium transition-all duration-300 ${
-              activeTab === "playlists"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Grid3X3 className="w-4 h-4" />
-            Playlists
-          </button>
-          <button
-            onClick={() => setActiveTab("saved")}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-[10px] text-sm font-medium transition-all duration-300 ${
-              activeTab === "saved"
-                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
-                : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
-            }`}
-          >
-            <Bookmark className="w-4 h-4" />
-            Saved
-          </button>
+        <div className="flex border-b border-border mb-4">
+          {tabs.map(({ key, label, icon: Icon, count }) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key)}
+              className={cn(
+                "flex-1 py-3 text-sm font-medium flex items-center justify-center gap-1.5 border-b-2 transition-colors",
+                activeTab === key 
+                  ? "border-primary text-primary" 
+                  : "border-transparent text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+              {count !== undefined && count > 0 && (
+                <span className="text-xs">({count})</span>
+              )}
+            </button>
+          ))}
         </div>
 
         {/* Content */}
         {isLoading ? (
           <PlaylistGridSkeleton count={4} />
         ) : currentPlaylists.length === 0 ? (
-          <Empty
-            className="py-12"
-            image={<Music2 className="w-10 h-10 mx-auto text-muted-foreground" />}
-            description={<Text type="secondary" className="text-sm">{activeTab === "playlists" ? "No playlists yet" : "No saved playlists"}</Text>}
-          />
+          <div className="py-16 text-center">
+            <Music2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-sm text-muted-foreground">
+              {activeTab === "playlists" ? "No public playlists yet" : 
+               activeTab === "private" ? "No private playlists yet" : 
+               "No saved playlists"}
+            </p>
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {currentPlaylists.map((playlist) => (
@@ -254,17 +248,25 @@ const ProfilePage = () => {
                 onClick={() => handlePlaylistClick(playlist.id)}
                 className="cursor-pointer group"
               >
-                <div className="aspect-square rounded-xl overflow-hidden mb-2 bg-secondary">
+                <div className="relative aspect-square rounded-xl overflow-hidden mb-2 bg-secondary">
                   {playlist.thumbnailUrl ? (
-                    <img src={playlist.thumbnailUrl} alt={playlist.title} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    <img 
+                      src={playlist.thumbnailUrl} 
+                      alt={playlist.title} 
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
                   ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${playlist.coverGradient} flex items-center justify-center`}>
-                      <Link2 className="w-6 h-6 text-white/30" />
+                    <div className={`w-full h-full bg-gradient-to-br ${playlist.coverGradient || 'from-primary/20 to-primary/40'} flex items-center justify-center`}>
+                      <Music2 className="w-8 h-8 text-foreground/30" />
                     </div>
                   )}
                 </div>
-                <Text strong className="text-xs block truncate">{playlist.title}</Text>
-                <Text type="secondary" className="text-[10px]">{playlist.songCount || playlist.songs.length} songs</Text>
+                <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                  {playlist.title}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {playlist.songCount || playlist.songs.length} songs
+                </p>
               </div>
             ))}
           </div>
