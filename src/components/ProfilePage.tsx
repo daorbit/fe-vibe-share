@@ -248,7 +248,7 @@ const ProfilePage = () => {
                 onClick={() => handlePlaylistClick(playlist.id)}
                 className="cursor-pointer group"
               >
-                <div className="relative aspect-square rounded-xl overflow-hidden mb-2 bg-secondary">
+                <div className="relative aspect-square rounded-[6px] overflow-hidden bg-secondary">
                   {playlist.thumbnailUrl ? (
                     <img 
                       src={playlist.thumbnailUrl} 
@@ -260,13 +260,20 @@ const ProfilePage = () => {
                       <Music2 className="w-8 h-8 text-foreground/30" />
                     </div>
                   )}
+                  
+                  {/* Gradient overlay at bottom */}
+                  <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+                  
+                  {/* Playlist details in bottom left */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <p className="text-sm font-semibold text-white truncate mb-0.5">
+                      {playlist.title}
+                    </p>
+                    <p className="text-xs text-white/80">
+                      {playlist.songCount || playlist.songs.length} songs
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                  {playlist.title}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {playlist.songCount || playlist.songs.length} songs
-                </p>
               </div>
             ))}
           </div>

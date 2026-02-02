@@ -6,6 +6,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { likePlaylist, unlikePlaylist, savePlaylist, unsavePlaylist } from "@/store/slices/playlistSlice";
 import UserAvatar from "@/components/UserAvatar";
 import { triggerHaptic } from "@/hooks/useHaptic";
+import ShareDrawer from "@/components/ShareDrawer";
 
 const { Text } = Typography;
 
@@ -61,6 +62,7 @@ const PlaylistPost = ({
   const [isSaving, setIsSaving] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [shareDrawerOpen, setShareDrawerOpen] = useState(false);
 
   useEffect(() => {
     setIsLikedState(isLiked);
@@ -140,19 +142,7 @@ const PlaylistPost = ({
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
     triggerHaptic('light');
-    const shareUrl = `${window.location.origin}/playlist/${id}`;
-    const shareText = `Check out "${playlistName}" playlist!`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: playlistName, text: shareText, url: shareUrl });
-      } catch (err) {
-        console.log("Share cancelled");
-      }
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      message.success("Link copied to clipboard");
-    }
+    setShareDrawerOpen(true);
   };
 
   const formatNumber = (num: number) => {
@@ -200,10 +190,10 @@ const PlaylistPost = ({
       {/* Cover */}
       <button 
         type="button"
-        className="relative w-full group rounded-2xl overflow-hidden mb-4 touch-manipulation text-left"
+        className="relative w-full group rounded-[10px] overflow-hidden mb-3 touch-manipulation text-left"
         onClick={onClick}
       >
-        <div className="aspect-[4/3] w-full">
+        <div className="aspect-square w-full">
           {showThumbnail ? (
             <img 
               src={firstSongThumbnail}
@@ -257,16 +247,56 @@ const PlaylistPost = ({
         </div>
       </button>
 
-      {/* Info */}
-      <div className="mb-3">
-        <h3 className="font-semibold text-base mb-1">{playlistName}</h3>
+      {/* Actions - Instagram style */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-4">
+          <button 
+            type="button"
+            onClick={handleLike}
+            disabled={isLiking}
+            className={`flex items-center gap-1.5 transition-all duration-200 touch-manipulation active:scale-90 ${
+              isLikedState ? "text-red-500" : "text-foreground hover:text-muted-foreground"
+            } ${isLiking ? "opacity-50" : ""}`}
+          >
+            <Heart 
+              className={`w-[22px] h-[22px] transition-transform duration-200 ${isLikedState ? "fill-current" : ""}`} 
+            />
+            <Text strong className="text-sm">{formatNumber(likeCount)}</Text>
+          </button>
+          <button 
+            type="button"
+            onClick={handleShare}
+            className="text-foreground hover:text-muted-foreground transition-colors duration-200 active:scale-90 touch-manipulation"
+          >
+            <Share2 className="w-[22px] h-[22px]" />
+          </button>
+        </div>
+        <button 
+          type="button"
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`transition-all duration-200 touch-manipulation active:scale-90 ${
+            isSavedState ? "text-foreground" : "text-foreground hover:text-muted-foreground"
+          } ${isSaving ? "opacity-50" : ""}`}
+        >
+          {isSavedState ? (
+            <BookmarkCheck className="w-[22px] h-[22px] fill-current" />
+          ) : (
+            <Bookmark className="w-[22px] h-[22px]" />
+          )}
+        </button>
+      </div>
+
+      {/* Title and Description */}
+      <div className="mb-1">
+        <h3 className="font-semibold text-[15px] mb-1">{playlistName}</h3>
         {description && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-foreground">
             {showFullDescription ? description : truncatedDescription}
             {description.length > 100 && (
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowFullDescription(!showFullDescription); }}
-                className="text-primary ml-1 hover:underline"
+                className="text-muted-foreground ml-1 hover:text-foreground"
               >
                 {showFullDescription ? "less" : "more"}
               </button>
@@ -275,49 +305,14 @@ const PlaylistPost = ({
         )}
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-2">
-          <button 
-            type="button"
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-300 touch-manipulation ${
-              isLikedState 
-                ? "bg-red-500/10 text-red-500" 
-                : "bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground"
-            } ${isLiking ? "opacity-50 scale-95" : "active:scale-95"}`}
-          >
-            <Heart 
-              className={`w-4 h-4 transition-transform duration-300 ${isLikedState ? "fill-current scale-110" : ""}`} 
-            />
-            <span className="text-sm font-semibold">{formatNumber(likeCount)}</span>
-          </button>
-          <button 
-            type="button"
-            onClick={handleShare}
-            className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground transition-all duration-200 active:scale-95 touch-manipulation"
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        </div>
-        <button 
-          type="button"
-          onClick={handleSave}
-          disabled={isSaving}
-          className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 touch-manipulation ${
-            isSavedState 
-              ? "bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25" 
-              : "bg-secondary/80 hover:bg-secondary active:bg-secondary text-muted-foreground hover:text-foreground"
-          } ${isSaving ? "opacity-50 scale-95" : "active:scale-95"}`}
-        >
-          {isSavedState ? (
-            <BookmarkCheck className="w-4 h-4 fill-current" />
-          ) : (
-            <Bookmark className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+      {/* Share Drawer */}
+      <ShareDrawer
+        open={shareDrawerOpen}
+        onClose={() => setShareDrawerOpen(false)}
+        shareUrl={`${window.location.origin}/playlist/${id}`}
+        shareTitle="Share Playlist"
+        shareText={`Check out "${playlistName}" playlist!`}
+      />
     </article>
   );
 };

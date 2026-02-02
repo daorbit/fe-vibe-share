@@ -92,17 +92,36 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAppSelector((state) => state.auth);
   const isLoggedIn = !!user;
+  
+  // Cache management - prevent unnecessary refetches
+  const [lastFetch, setLastFetch] = useState<{
+    playlists?: number;
+    saved?: number;
+    feed?: number;
+  }>({});
+  const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
 
-  // Load user's playlists when logged in
+  const isCacheValid = (key: 'playlists' | 'saved' | 'feed') => {
+    const lastFetchTime = lastFetch[key];
+    return lastFetchTime && Date.now() - lastFetchTime < CACHE_DURATION;
+  };
+
+  // Load user's playlists when logged in (with cache check)
   useEffect(() => {
     if (isLoggedIn && user) {
-      refreshPlaylists();
-      refreshSavedPlaylists();
+      if (!isCacheValid('playlists')) {
+        refreshPlaylists();
+      }
+      if (!isCacheValid('saved')) {
+        refreshSavedPlaylists();
+      }
     } else {
       setPlaylists([]);
       setSavedPlaylists([]);
+      setLastFetch({});
     }
-  }, [isLoggedIn, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn, user?.id]);
 
   const refreshPlaylists = useCallback(async () => {
     if (!user) return;
@@ -112,6 +131,7 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
       setError(null);
       const response = await playlistsAPI.getPlaylists({ user: user.id });
       setPlaylists(response.data.playlists.map(transformPlaylist));
+      setLastFetch(prev => ({ ...prev, playlists: Date.now() }));
     } catch (err) {
       console.error('Failed to load playlists:', err);
       setError('Failed to load playlists');
@@ -126,6 +146,7 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await playlistsAPI.getSavedPlaylists({ limit: 50 });
       setSavedPlaylists(response.data.playlists.map(transformPlaylist));
+      setLastFetch(prev => ({ ...prev, saved: Date.now() }));
     } catch (err) {
       console.error('Failed to load saved playlists:', err);
       setSavedPlaylists([]);
@@ -133,11 +154,17 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const fetchFeedPlaylists = useCallback(async (params?: { page?: number; limit?: number }) => {
+    // Skip if cache is valid and no params change
+    if (!params && isCacheValid('feed')) {
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
       const response = await feedAPI.getFeed(params);
       setFeedPlaylists(response.data.playlists.map(transformPlaylist));
+      setLastFetch(prev => ({ ...prev, feed: Date.now() }));
     } catch (err) {
       console.error('Failed to load feed playlists:', err);
       setError('Failed to load feed playlists');

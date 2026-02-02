@@ -216,9 +216,7 @@ const MiniPlayer = ({ songs, currentIndex, onChangeIndex, onClose }: MiniPlayerP
             <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={() => setShowQueue(!showQueue)}>
               <List className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={() => setIsExpanded(!isExpanded)}>
-              {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </Button>
+ 
             <Button variant="ghost" size="icon" className="h-8 w-8 hover:scale-110 active:scale-95 transition-transform" onClick={handleOpenExternal}>
               <ExternalLink className="w-4 h-4" />
             </Button>

@@ -16,10 +16,10 @@ const TopNav = ({ onShareClick, isLoggedIn }: TopNavProps) => {
 
   return (
     <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
-      <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
+      <div className="flex items-center justify-between px-4 h-10 max-w-lg mx-auto">
         <div className="flex items-center gap-2">
  
-          <img src="/logo.png" alt="Now Music" className="h-12 w-auto" />
+          <img src="/logo.png" alt="Now Music" className="h-10 w-auto" />
         </div>
         <div className="flex items-center gap-2">
           <button

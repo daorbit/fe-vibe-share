@@ -253,7 +253,7 @@ const UserProfile = () => {
                   onClick={() => navigate(`/playlist/${playlist.id}`)}
                   className="cursor-pointer group"
                 >
-                  <div className="relative aspect-square rounded-xl overflow-hidden mb-2 bg-secondary">
+                  <div className="relative aspect-square rounded-[6px] overflow-hidden bg-secondary">
                     {playlist.thumbnailUrl || playlist.songs?.[0]?.thumbnail ? (
                       <img 
                         src={playlist.thumbnailUrl || playlist.songs[0].thumbnail} 
@@ -265,13 +265,20 @@ const UserProfile = () => {
                         <Music className="w-10 h-10 text-white/50" />
                       </div>
                     )}
+                    
+                    {/* Gradient overlay at bottom */}
+                    <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 to-transparent" />
+                    
+                    {/* Playlist details in bottom left */}
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <p className="text-sm font-semibold text-white truncate mb-0.5">
+                        {playlist.title}
+                      </p>
+                      <p className="text-xs text-white/80">
+                        {playlist.songCount || playlist.songs?.length || 0} songs
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                    {playlist.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {playlist.songCount || playlist.songs?.length || 0} songs
-                  </p>
                 </motion.div>
               ))}
             </div>

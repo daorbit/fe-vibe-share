@@ -43,6 +43,13 @@ class AudioPlayerService {
     
     // Set attributes for background playback on mobile
     this.audioElement.setAttribute('playsinline', 'true');
+    this.audioElement.setAttribute('x-webkit-airplay', 'allow');
+    
+    // Prevent audio from being paused when screen locks on iOS
+    this.audioElement.setAttribute('webkit-playsinline', 'true');
+    
+    // Allow background audio playback
+    this.audioElement.crossOrigin = 'anonymous';
     
     // Event listeners
     this.audioElement.addEventListener('play', this.handlePlay);
@@ -54,9 +61,16 @@ class AudioPlayerService {
     this.audioElement.addEventListener('error', this.handleError);
     this.audioElement.addEventListener('loadedmetadata', this.handleLoadedMetadata);
     
+    // Prevent screen lock from pausing audio
+    this.audioElement.addEventListener('suspend', this.handleSuspend);
+    this.audioElement.addEventListener('stalled', this.handleStalled);
+    
     // Append to body (hidden)
     this.audioElement.style.display = 'none';
     document.body.appendChild(this.audioElement);
+    
+    // Prevent page visibility changes from affecting playback
+    this.setupVisibilityHandling();
     
     this.isInitialized = true;
   }
@@ -96,6 +110,48 @@ class AudioPlayerService {
       });
     }
   }
+
+  private setupVisibilityHandling() {
+    // Prevent page visibility changes from pausing audio
+    document.addEventListener('visibilitychange', () => {
+      // Don't do anything - let audio continue playing
+      // This prevents mobile browsers from pausing when minimized
+      if (document.hidden && this.isPlaying) {
+        console.log('Page hidden, audio continues playing');
+      }
+    });
+
+    // Handle page freeze/resume (mobile Safari)
+    window.addEventListener('pagehide', () => {
+      // Don't pause - let it continue
+      console.log('Page hiding, maintaining playback');
+    });
+
+    window.addEventListener('pageshow', () => {
+      // Resume if was playing
+      if (this.isPlaying && this.audioElement?.paused) {
+        this.audioElement.play().catch(e => console.log('Resume failed:', e));
+      }
+    });
+  }
+
+  private handleSuspend = () => {
+    // Audio suspended (network issue or mobile optimization)
+    // Try to resume if we were playing
+    if (this.isPlaying && this.audioElement) {
+      console.log('Audio suspended, attempting to resume');
+      setTimeout(() => {
+        if (this.audioElement?.paused && this.isPlaying) {
+          this.audioElement.play().catch(e => console.log('Resume from suspend failed:', e));
+        }
+      }, 100);
+    }
+  };
+
+  private handleStalled = () => {
+    // Network stalled
+    console.log('Audio stalled');
+  };
 
   private updateMediaSessionMetadata() {
     if ('mediaSession' in navigator && this.currentSong) {

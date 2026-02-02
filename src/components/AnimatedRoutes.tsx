@@ -5,7 +5,6 @@ import MainLayout from "./MainLayout";
 import PageTransition from "./PageTransition";
 import {
   FeedSkeleton,
-  DiscoverSkeleton,
   SearchResultsSkeleton,
   ProfileSkeleton,
   UserProfileSkeleton,
@@ -17,7 +16,6 @@ import {
 
 // Lazy load pages for better code splitting
 const Feed = lazy(() => import("@/pages/Feed"));
-const Discover = lazy(() => import("@/pages/Discover"));
 const Search = lazy(() => import("@/pages/Search"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const UserProfile = lazy(() => import("@/pages/UserProfile"));
@@ -78,16 +76,6 @@ const AnimatedRoutes = () => {
               <PageTransition>
                 <LazyPage fallback={<FeedSkeleton count={3} />}>
                   <Feed />
-                </LazyPage>
-              </PageTransition>
-            }
-          />
-          <Route
-            path="/discover"
-            element={
-              <PageTransition>
-                <LazyPage fallback={<DiscoverSkeleton />}>
-                  <Discover />
                 </LazyPage>
               </PageTransition>
             }
