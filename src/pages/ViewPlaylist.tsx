@@ -3,12 +3,12 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Heart, Share2, MoreHorizontal, Bookmark, ExternalLink, Edit, Link2, Play, Clock, Music2, BookmarkCheck } from "lucide-react";
 import { usePlaylist, SongLink } from "@/contexts/PlaylistContext";
+import { usePlayer } from "@/contexts/PlayerContext";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { likePlaylist, unlikePlaylist } from "@/store/slices/playlistSlice";
 import { getPlatformColor, getPlatformIcon } from "@/lib/songUtils";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import MiniPlayer from "@/components/MiniPlayer";
 import UserAvatar from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClickSound } from "@/hooks/useClickSound";
@@ -39,6 +39,7 @@ const ViewPlaylist = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getPlaylist, savePlaylist, unsavePlaylist, savedPlaylists } = usePlaylist();
+  const { playSongs } = usePlayer();
   const { user } = useAppSelector((state) => state.auth);
   const isLoggedIn = !!user;
   const dispatch = useAppDispatch();
@@ -47,7 +48,6 @@ const ViewPlaylist = () => {
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [activeSongIndex, setActiveSongIndex] = useState<number | null>(null);
   const fetchingRef = useRef(false);
   const isSaved = savedPlaylists.some(p => p.id === id);
   const isOwn = playlist?.user?._id === user?.id;
@@ -81,7 +81,9 @@ const ViewPlaylist = () => {
 
   const handlePlaySong = (index: number) => {
     playSound('pop');
-    setActiveSongIndex(index);
+    if (playlist) {
+      playSongs(playlist.songs, index, playlist.id, playlist.title);
+    }
   };
 
   const handleOpenExternal = (e: React.MouseEvent, song: SongLink) => {
@@ -506,16 +508,6 @@ const ViewPlaylist = () => {
           )}
         </div>
       </div>
-
-      {/* Mini Player */}
-      {activeSongIndex !== null && playlist.songs.length > 0 && (
-        <MiniPlayer
-          songs={playlist.songs}
-          currentIndex={activeSongIndex}
-          onChangeIndex={setActiveSongIndex}
-          onClose={() => setActiveSongIndex(null)}
-        />
-      )}
     </div>
   );
 };

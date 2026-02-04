@@ -7,6 +7,7 @@ import { PlaylistProvider } from "./contexts/PlaylistContext";
 import { SocialProvider } from "./contexts/SocialContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { WelcomeProvider } from "./contexts/WelcomeContext";
+import { PlayerProvider } from "./contexts/PlayerContext";
 import AuthInitializer from "./components/AuthInitializer";
 import AnimatedRoutes from "./components/AnimatedRoutes";
 
@@ -33,7 +34,9 @@ const App = () => (
             <WelcomeProvider>
               <PlaylistProvider>
                 <SocialProvider>
-                  <AnimatedRoutes />
+                  <PlayerProvider>
+                    <AnimatedRoutes />
+                  </PlayerProvider>
                 </SocialProvider>
               </PlaylistProvider>
             </WelcomeProvider>
