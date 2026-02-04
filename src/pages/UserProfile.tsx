@@ -5,7 +5,7 @@ import { useAppSelector } from "@/store/hooks";
 import { usePlaylist, Playlist } from "@/contexts/PlaylistContext";
 import { usersAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { message } from "antd";
 import UserAvatar from "@/components/UserAvatar";
 import { UserProfileSkeleton, PlaylistGridSkeleton } from "@/components/skeletons";
 import {
@@ -109,13 +109,13 @@ const UserProfile = () => {
       navigator.share({ title: `@${username}`, url: shareUrl });
     } else {
       navigator.clipboard.writeText(shareUrl);
-      toast.success("Profile link copied!");
+      message.success("Profile link copied!");
     }
   };
 
   const handleFollow = () => {
     setIsFollowing(!isFollowing);
-    toast.success(isFollowing ? "Unfollowed" : "Following!");
+    message.success(isFollowing ? "Unfollowed" : "Following!");
   };
 
   if (loadingUser) {

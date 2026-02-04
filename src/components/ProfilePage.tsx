@@ -8,7 +8,7 @@ import { Music2 } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { PlaylistGridSkeleton } from "@/components/skeletons";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { message } from "antd";
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState("playlists");
@@ -57,9 +57,9 @@ const ProfilePage = () => {
       dispatch(invalidateUserPlaylists());
       dispatch(invalidateSavedPlaylists());
       fetchData(true);
-      toast.success("Profile refreshed!");
+      message.success("Profile refreshed!");
     } catch (error) {
-      toast.error("Failed to refresh");
+      message.error("Failed to refresh");
     } finally {
       setIsRefreshing(false);
     }
@@ -68,12 +68,12 @@ const ProfilePage = () => {
   const handleShareProfile = () => {
     const shareUrl = `${window.location.origin}/user/${user?.username}`;
     navigator.clipboard.writeText(shareUrl);
-    toast.success("Profile link copied!");
+    message.success("Profile link copied!");
   };
 
   const handleLogout = async () => {
     await dispatch(logout());
-    toast.success("Logged out");
+    message.success("Logged out");
     navigate("/");
   };
 

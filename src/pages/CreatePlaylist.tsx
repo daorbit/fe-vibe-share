@@ -9,7 +9,7 @@ import { gradients } from "@/lib/songUtils";
 import { playlistsAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
+import { message } from "antd";
 import AddSongSheet from "@/components/AddSongSheet";
 import SortableSongItem from "@/components/SortableSongItem";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -134,14 +134,14 @@ const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: 
         // If the song has an id, it's already saved in the database, so delete it
         if (songToDelete.id) {
           await playlistsAPI.deleteSong(songToDelete.id);
-          toast.success('Song removed');
+          message.success('Song removed');
         }
         // Remove from local state
         setSongs(songs.filter(s => s.tempId !== songToDelete.tempId));
         setSongToDelete(null);
       } catch (err) {
         console.error('Failed to delete song:', err);
-        toast.error('Failed to remove song');
+        message.error('Failed to remove song');
       } finally {
         setIsDeletingSong(false);
       }
@@ -163,11 +163,11 @@ const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: 
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        toast.error("Image must be less than 5MB");
+        message.error("Image must be less than 5MB");
         return;
       }
       if (!file.type.startsWith('image/')) {
-        toast.error("Please select an image file");
+        message.error("Please select an image file");
         return;
       }
       
@@ -232,15 +232,15 @@ const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: 
           await playlistsAPI.uploadPlaylistThumbnail(playlist.id, thumbnailFile);
         } catch (thumbnailError) {
           console.error('Failed to upload thumbnail:', thumbnailError);
-          toast.error("Playlist created, but thumbnail upload failed");
+          message.error("Playlist created, but thumbnail upload failed");
         }
       }
 
-      toast.success("Playlist created successfully!");
+      message.success("Playlist created successfully!");
       navigate(`/playlist/${playlist.id}`);
     } catch (err) {
       console.error('Failed to create/update playlist:', err);
-      toast.error("Failed to save playlist");
+      message.error("Failed to save playlist");
     } finally {
       setIsCreating(false);
     }

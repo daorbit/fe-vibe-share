@@ -8,3 +8,4 @@ export { DiscoverSkeleton } from './DiscoverSkeleton';
 export { SettingsSkeleton } from './SettingsSkeleton';
 export { CreatePlaylistSkeleton } from './CreatePlaylistSkeleton';
 export { AuthSkeleton } from './AuthSkeleton';
+export { default as NotificationSkeleton } from './NotificationSkeleton';

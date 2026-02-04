@@ -6,11 +6,6 @@ interface UIState {
   searchQuery: string;
   activeTab: string;
   soundEnabled: boolean;
-  toasts: Array<{
-    id: string;
-    message: string;
-    type: 'success' | 'error' | 'info';
-  }>;
 }
 
 // Load sound preference from localStorage
@@ -28,7 +23,6 @@ const initialState: UIState = {
   searchQuery: '',
   activeTab: 'feed',
   soundEnabled: loadSoundPreference(),
-  toasts: [],
 };
 
 const uiSlice = createSlice({
@@ -56,15 +50,6 @@ const uiSlice = createSlice({
         localStorage.setItem('soundEnabled', JSON.stringify(action.payload));
       }
     },
-    addToast: (state, action: PayloadAction<{ message: string; type: 'success' | 'error' | 'info' }>) => {
-      state.toasts.push({
-        id: Date.now().toString(),
-        ...action.payload,
-      });
-    },
-    removeToast: (state, action: PayloadAction<string>) => {
-      state.toasts = state.toasts.filter(t => t.id !== action.payload);
-    },
   },
 });
 
@@ -75,8 +60,6 @@ export const {
   setSearchQuery,
   setActiveTab,
   setSoundEnabled,
-  addToast,
-  removeToast,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

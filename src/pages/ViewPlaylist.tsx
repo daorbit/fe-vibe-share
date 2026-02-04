@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { likePlaylist, unlikePlaylist } from "@/store/slices/playlistSlice";
 import { getPlatformColor, getPlatformIcon } from "@/lib/songUtils";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { message } from "antd";
 import UserAvatar from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClickSound } from "@/hooks/useClickSound";
@@ -99,7 +99,7 @@ const ViewPlaylist = () => {
       navigator.share({ title: song.title, url: song.url });
     } else {
       navigator.clipboard.writeText(song.url);
-      toast.success("Link copied!");
+      message.success("Link copied!");
     }
   };
 
@@ -128,7 +128,7 @@ const ViewPlaylist = () => {
       // Revert on error
       setIsLiked(wasLiked);
       setLikeCount(prevCount);
-      toast.error("Failed to update like");
+      message.error("Failed to update like");
     }
   };
 
@@ -143,10 +143,10 @@ const ViewPlaylist = () => {
     
     if (isSaved) {
       unsavePlaylist(playlist.id);
-      toast.success("Removed from saved");
+      message.success("Removed from saved");
     } else {
       savePlaylist(playlist.id);
-      toast.success("Saved to library!");
+      message.success("Saved to library!");
     }
   };
 
@@ -160,7 +160,7 @@ const ViewPlaylist = () => {
       navigator.share({ title: playlist.title, url: shareUrl });
     } else {
       navigator.clipboard.writeText(shareUrl);
-      toast.success("Link copied!");
+      message.success("Link copied!");
     }
   };
 

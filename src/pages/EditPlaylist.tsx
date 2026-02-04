@@ -6,7 +6,7 @@ import { usePlaylist } from "@/contexts/PlaylistContext";
 import { fetchFeedPlaylists } from "@/store/slices/playlistSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { playlistsAPI } from "@/lib/api";
-import { toast } from "sonner";
+import { message } from "antd";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
@@ -53,7 +53,7 @@ const EditPlaylist = () => {
         setPlaylist(data);
       } catch (err) {
         console.error('Failed to load playlist:', err);
-        toast.error('Failed to load playlist');
+        message.error('Failed to load playlist');
         navigate('/profile');
       } finally {
         setIsLoading(false);
@@ -84,7 +84,7 @@ const EditPlaylist = () => {
         await playlistsAPI.uploadPlaylistThumbnail(id, payload.thumbnailFile);
       } catch (err) {
         console.error('Thumbnail upload failed:', err);
-        toast.error('Playlist saved but thumbnail upload failed');
+        message.error('Playlist saved but thumbnail upload failed');
       }
     }
 
@@ -94,11 +94,11 @@ const EditPlaylist = () => {
         await playlistsAPI.removePlaylistThumbnail(id);
       } catch (err) {
         console.error('Thumbnail removal failed:', err);
-        toast.error('Playlist saved but thumbnail removal failed');
+        message.error('Playlist saved but thumbnail removal failed');
       }
     }
 
-    toast.success('Playlist saved');
+    message.success('Playlist saved');
     dispatch(fetchFeedPlaylists({ limit: 10, page: 1 }));
     navigate(`/playlist/${id}`);
   };
@@ -124,7 +124,7 @@ const EditPlaylist = () => {
       await proceedWithSubmit(payload, removedSongIds);
     } catch (err) {
       console.error('Failed to save playlist:', err);
-      toast.error('Failed to save playlist');
+      message.error('Failed to save playlist');
     }
   };
 
@@ -138,11 +138,11 @@ const EditPlaylist = () => {
       if (!id) return;
       try {
         await deletePlaylist(id);
-        toast.success('Playlist deleted');
+        message.success('Playlist deleted');
         navigate('/profile');
       } catch (err) {
         console.error('Failed to delete playlist:', err);
-        toast.error('Failed to delete playlist');
+        message.error('Failed to delete playlist');
       }
     } else if (deleteType === 'songs') {
       if (pendingPayload) {

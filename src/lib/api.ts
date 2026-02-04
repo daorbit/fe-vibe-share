@@ -487,3 +487,41 @@ export const searchAPI = {
     return handleResponse(response);
   },
 };
+
+// Notifications API
+export const notificationsAPI = {
+  getNotifications: async (params?: { page?: number; limit?: number; unreadOnly?: boolean }) => {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', params.page.toString());
+    if (params?.limit) query.set('limit', params.limit.toString());
+    if (params?.unreadOnly) query.set('unreadOnly', 'true');
+
+    const response = await fetch(`${API_BASE_URL}/notifications?${query}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  getUnreadCount: async () => {
+    const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  markAllAsRead: async () => {
+    const response = await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  deleteNotification: async (notificationId: string) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+};
