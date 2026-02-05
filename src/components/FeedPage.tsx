@@ -4,7 +4,6 @@ import { RefreshCw } from "lucide-react";
 import { Button, Empty, Typography } from "antd";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchFeedPlaylists, resetFeedPagination, isCacheValid } from "@/store/slices/playlistSlice";
-import TopNav from "./TopNav";
 import PlaylistPost, { PlaylistPostData } from "./PlaylistPost";
 import { FeedSkeleton, FeedCardSkeleton } from "@/components/skeletons";
 import PullToRefresh from "./PullToRefresh";
@@ -117,9 +116,7 @@ const FeedPage = ({ onShareClick, isLoggedIn }: FeedPageProps) => {
       progress={progress}
       shouldTrigger={shouldTrigger}
     >
-      <div className="min-h-screen">
-        <TopNav onShareClick={onShareClick} isLoggedIn={isLoggedIn} />
-        
+      <div>
         <div className="max-w-lg mx-auto">
           {isLoading && feedPlaylists.length > 0 && (
             <div className="px-4 py-4">

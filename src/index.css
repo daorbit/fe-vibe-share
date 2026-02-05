@@ -66,9 +66,42 @@
     @apply border-border;
   }
 
+  html {
+    /* Prevent bounce scrolling on iOS */
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Outfit', 'Inter', sans-serif;
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    /* Support for iOS safe areas */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  #root {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  /* Mobile-safe height that accounts for iOS browser chrome */
+  .h-screen-mobile {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height - works on modern browsers */
+  }
+
+  /* Fallback for older browsers */
+  @supports not (height: 100dvh) {
+    .h-screen-mobile {
+      height: -webkit-fill-available;
+    }
   }
 
   .safe-area-bottom {
@@ -330,6 +363,17 @@
   .animate-glow {
     animation: glow-pulse 3s ease-in-out infinite;
   }
+
+  /* Mobile-friendly height classes */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
+  }
+
+  .h-screen-safe {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+  }
 }
 
 @keyframes fade-in {
@@ -555,7 +599,27 @@
   .animate-spin-slow {
     animation: spin-slow 8s linear infinite;
   }
+
+  /* Custom notification message animation */
+  .custom-notification-message {
+    animation: slideInDown 0.3s ease-out;
+  }
+
+  .custom-notification-message .ant-message-notice-content {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 16px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  .custom-notification-message .ant-message-success .anticon {
+    color: #10b981;
+  }
 }
+
 
 @keyframes spin-slow {
   from {
@@ -563,5 +627,16 @@
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

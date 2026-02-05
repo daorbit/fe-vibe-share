@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X,
@@ -25,7 +25,7 @@ const getEmbedUrl = (url: string, platform: string): string | null => {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match?.[1]) {
-        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=0&modestbranding=1&fs=0&iv_load_policy=3&disablekb=1`;
+        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1`;
       }
     }
   }
@@ -59,26 +59,57 @@ const Player = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const currentSongRef = useRef<HTMLButtonElement>(null);
   const [activeTab, setActiveTab] = useState("queue");
+  const prevTabRef = useRef(activeTab);
 
   const currentSong = getCurrentSong();
   const embedUrl = currentSong
     ? getEmbedUrl(currentSong.url, currentSong.platform)
     : null;
 
-  // Auto-scroll to currently playing song on mount and when switching to queue tab
+  // Scroll to current song helper
+  const scrollToCurrentSong = useCallback(() => {
+    if (!currentSongRef.current) return;
+    setTimeout(() => {
+      currentSongRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }, 100);
+  }, []);
+
+  // Scroll when switching back to queue tab
   useEffect(() => {
-    if (currentSongRef.current && activeTab === "queue") {
-      // Small delay to ensure DOM is ready and ScrollArea is rendered
-      const timer = setTimeout(() => {
-        currentSongRef.current?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      }, 300);
-      
-      return () => clearTimeout(timer);
+    if (activeTab === "queue" && prevTabRef.current !== "queue") {
+      scrollToCurrentSong();
     }
-  }, [playerState?.currentIndex, activeTab]); // Re-run when current song changes or tab switches
+    prevTabRef.current = activeTab;
+  }, [activeTab, scrollToCurrentSong]);
+
+  // Scroll when current song changes
+  useEffect(() => {
+    if (activeTab === "queue") {
+      scrollToCurrentSong();
+    }
+  }, [playerState?.currentIndex, scrollToCurrentSong, activeTab]);
+
+  // Listen for YouTube postMessage events for auto-advance
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin === "https://www.youtube.com") {
+        try {
+          const data = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+          if (data?.event === "onStateChange" && data?.info === 0) {
+            nextSong();
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [nextSong]);
 
   // Media Session API for background/lock screen controls
   useEffect(() => {
@@ -118,16 +149,14 @@ const Player = () => {
     }
   };
 
- 
-
   if (!playerState) {
     navigate("/");
     return null;
   }
 
   return (
-    <div className="h-screen bg-background flex flex-col overflow-hidden">
-      {/* Compact Header - Fixed */}
+    <div className="max-w-lg mx-auto h-screen bg-background flex flex-col overflow-hidden">
+      {/* Compact Header */}
       <div className="flex items-center justify-between px-3 py-2 bg-card border-b border-border/30 shrink-0">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <Button
@@ -161,12 +190,12 @@ const Player = () => {
           >
             <ExternalLink className="w-4 h-4" />
           </Button>
-          
         </div>
       </div>
 
-      {/* Player Area - Fixed */}
-      <div className="w-full aspect-video bg-black shrink-0">{embedUrl ? (
+      {/* Player Area */}
+      <div className="w-full aspect-video bg-black shrink-0">
+        {embedUrl ? (
           <iframe
             ref={iframeRef}
             key={currentSong?.id || playerState.currentIndex}
@@ -204,7 +233,7 @@ const Player = () => {
         )}
       </div>
 
-      {/* Tabs: Queue | Playlists - Fixed with scrollable content */}
+      {/* Tabs: Queue | Playlists */}
       <div className="flex-1 flex flex-col min-h-0">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
           <TabsList className="w-full grid grid-cols-2 bg-muted/30 border-y border-border/20 rounded-none h-10 shrink-0">
@@ -224,9 +253,10 @@ const Player = () => {
             </TabsTrigger>
           </TabsList>
 
-          {/* Queue Tab - Scrollable */}
+          {/* Queue Tab */}
           <TabsContent value="queue" className="flex-1 mt-0 overflow-hidden">
-            <ScrollArea className="h-full">{/* Now Playing from Temporary Playlist */}
+            <ScrollArea className="h-full">
+              {/* Now Playing from Temporary Playlist */}
               {isPlayingFromTemporary && playerState.temporarySongs && (
                 <div className="border-b-2 border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
                   <div className="px-3 py-2 border-b border-border/30">
@@ -234,13 +264,11 @@ const Player = () => {
                       Now Playing from: {playerState.temporaryPlaylistTitle}
                     </p>
                   </div>
-                  {/* Show only current song from temporary playlist */}
                   <div className="bg-primary/10">
                     <button
                       className="w-full flex items-center gap-2 px-3 py-2 text-left"
                       disabled
                     >
-                      {/* Playing Indicator */}
                       <div className="w-5 shrink-0 flex justify-center">
                         <div className="flex items-center gap-[2px]">
                           <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-1"></div>
@@ -248,15 +276,9 @@ const Player = () => {
                           <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-3"></div>
                         </div>
                       </div>
-
-                      {/* Thumbnail */}
-                      {playerState.temporarySongs[playerState.temporaryIndex]
-                        .thumbnail ? (
+                      {playerState.temporarySongs[playerState.temporaryIndex].thumbnail ? (
                         <img
-                          src={
-                            playerState.temporarySongs[playerState.temporaryIndex]
-                              .thumbnail
-                          }
+                          src={playerState.temporarySongs[playerState.temporaryIndex].thumbnail}
                           alt=""
                           className="w-12 h-9 rounded object-cover shrink-0"
                         />
@@ -264,26 +286,15 @@ const Player = () => {
                         <div
                           className={`w-12 h-9 rounded flex items-center justify-center shrink-0 ${getPlatformColor(playerState.temporarySongs[playerState.temporaryIndex].platform)}`}
                         >
-                          {getPlatformIcon(
-                            playerState.temporarySongs[playerState.temporaryIndex]
-                              .platform,
-                          )}
+                          {getPlatformIcon(playerState.temporarySongs[playerState.temporaryIndex].platform)}
                         </div>
                       )}
-
-                      {/* Song Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-normal leading-tight line-clamp-2 text-foreground">
-                          {
-                            playerState.temporarySongs[playerState.temporaryIndex]
-                              .title
-                          }
+                          {playerState.temporarySongs[playerState.temporaryIndex].title}
                         </p>
                         <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                          {
-                            playerState.temporarySongs[playerState.temporaryIndex]
-                              .artist
-                          }
+                          {playerState.temporarySongs[playerState.temporaryIndex].artist}
                         </p>
                       </div>
                     </button>
@@ -291,84 +302,74 @@ const Player = () => {
                 </div>
               )}
 
-            {/* Original Queue */}
-            <div className={cn(isPlayingFromTemporary && "opacity-60")}>
-              {isPlayingFromTemporary && (
-                <div className="px-3 py-2 border-b border-border/30 bg-muted/30">
-                  <p className="text-xs font-medium">Your Queue</p>
-                  <p className="text-[10px] text-muted-foreground">
-                    Click any song to return to your queue
-                  </p>
-                </div>
-              )}
-              {playerState.songs.map((song, index) => (
-                <button
-                  ref={index === playerState.currentIndex && !isPlayingFromTemporary ? currentSongRef : null}
-                  key={song.id || index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-b border-border/10",
-                    index === playerState.currentIndex &&
-                      !isPlayingFromTemporary
-                      ? "bg-primary/10"
-                      : "hover:bg-muted/30",
-                  )}
-                >
-                  {/* Index / Playing Indicator */}
-                  <div className="w-5 shrink-0 flex justify-center">
-                    {index === playerState.currentIndex &&
-                    !isPlayingFromTemporary ? (
-                      <div className="flex items-center gap-[2px]">
-                        <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-1"></div>
-                        <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-2"></div>
-                        <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-3"></div>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-muted-foreground">
-                        {index + 1}
-                      </span>
+              {/* Original Queue */}
+              <div className={cn(isPlayingFromTemporary && "opacity-60")}>
+                {isPlayingFromTemporary && (
+                  <div className="px-3 py-2 border-b border-border/30 bg-muted/30">
+                    <p className="text-xs font-medium">Your Queue</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Click any song to return to your queue
+                    </p>
+                  </div>
+                )}
+                {playerState.songs.map((song, index) => (
+                  <button
+                    ref={index === playerState.currentIndex && !isPlayingFromTemporary ? currentSongRef : null}
+                    key={song.id || index}
+                    onClick={() => setCurrentIndex(index)}
+                    className={cn(
+                      "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-b border-border/10",
+                      index === playerState.currentIndex && !isPlayingFromTemporary
+                        ? "bg-primary/10"
+                        : "hover:bg-muted/30",
                     )}
-                  </div>
-
-                  {/* Thumbnail */}
-                  {song.thumbnail ? (
-                    <img
-                      src={song.thumbnail}
-                      alt=""
-                      className="w-12 h-9 rounded object-cover shrink-0"
-                    />
-                  ) : (
-                    <div
-                      className={`w-12 h-9 rounded flex items-center justify-center shrink-0 ${getPlatformColor(song.platform)}`}
-                    >
-                      {getPlatformIcon(song.platform)}
-                    </div>
-                  )}
-
-                  {/* Song Info */}
-                  <div className="flex-1 min-w-0">
-                    <p
-                      className={cn(
-                        "text-xs font-normal leading-tight line-clamp-2",
-                        index === playerState.currentIndex &&
-                          !isPlayingFromTemporary
-                          ? "text-foreground"
-                          : "text-foreground/80",
+                  >
+                    <div className="w-5 shrink-0 flex justify-center">
+                      {index === playerState.currentIndex && !isPlayingFromTemporary ? (
+                        <div className="flex items-center gap-[2px]">
+                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-1"></div>
+                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-2"></div>
+                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-3"></div>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-muted-foreground">{index + 1}</span>
                       )}
-                    >
-                      {song.title}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                      {song.artist}
-                    </p>
-                  </div>
-                </button>
-              ))}
-            </div>
+                    </div>
+                    {song.thumbnail ? (
+                      <img
+                        src={song.thumbnail}
+                        alt=""
+                        className="w-12 h-9 rounded object-cover shrink-0"
+                      />
+                    ) : (
+                      <div
+                        className={`w-12 h-9 rounded flex items-center justify-center shrink-0 ${getPlatformColor(song.platform)}`}
+                      >
+                        {getPlatformIcon(song.platform)}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={cn(
+                          "text-xs font-normal leading-tight line-clamp-2",
+                          index === playerState.currentIndex && !isPlayingFromTemporary
+                            ? "text-foreground"
+                            : "text-foreground/80",
+                        )}
+                      >
+                        {song.title}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                        {song.artist}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </ScrollArea>
           </TabsContent>
 
-          {/* Playlists Tab - Scrollable */}
+          {/* Playlists Tab */}
           <TabsContent value="playlists" className="flex-1 mt-0 overflow-hidden">
             <PlaylistsTab
               onPlayPlaylist={(songs, startIndex, playlistId, playlistTitle) => {

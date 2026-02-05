@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export const ProfileSkeleton = () => {
   return (
-    <div className="min-h-screen animate-fade-in">
+    <div className="  animate-fade-in">
       {/* Header Skeleton */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
         <div className="flex items-center justify-between px-4 h-12 max-w-lg mx-auto">

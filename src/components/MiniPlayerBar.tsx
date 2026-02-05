@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Music2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { getPlatformColor } from "@/lib/songUtils";
 
 const MiniPlayerBar = () => {
-  const { playerState, expandPlayer } = usePlayer();
+  const navigate = useNavigate();
+  const { playerState, getCurrentSong } = usePlayer();
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
@@ -17,10 +19,10 @@ const MiniPlayerBar = () => {
       const size = 80;
       setPosition({
         x: window.innerWidth - size - padding,
-        y: window.innerHeight - size - padding - 80, // Above nav bar
+        y: window.innerHeight - size - padding - 80,
       });
     };
-    
+
     updatePosition();
     window.addEventListener("resize", updatePosition);
     return () => window.removeEventListener("resize", updatePosition);
@@ -44,10 +46,10 @@ const MiniPlayerBar = () => {
     const touch = e.touches[0];
     const deltaX = touch.clientX - dragStartRef.current.x;
     const deltaY = touch.clientY - dragStartRef.current.y;
-    
+
     const newX = Math.max(0, Math.min(window.innerWidth - 80, dragStartRef.current.posX + deltaX));
     const newY = Math.max(0, Math.min(window.innerHeight - 80, dragStartRef.current.posY + deltaY));
-    
+
     setPosition({ x: newX, y: newY });
   };
 
@@ -56,14 +58,13 @@ const MiniPlayerBar = () => {
     e.preventDefault();
     if (!isDragging) return;
     setIsDragging(false);
-    
-    // If barely moved, treat as click
+
     const touch = e.changedTouches[0];
     const deltaX = Math.abs(touch.clientX - dragStartRef.current.x);
     const deltaY = Math.abs(touch.clientY - dragStartRef.current.y);
-    
+
     if (deltaX < 5 && deltaY < 5) {
-      expandPlayer();
+      navigate("/player");
     }
   };
 
@@ -77,14 +78,14 @@ const MiniPlayerBar = () => {
       posY: position.y,
     };
     setIsDragging(true);
-    
+
     const handleMouseMove = (e: MouseEvent) => {
       const deltaX = e.clientX - dragStartRef.current.x;
       const deltaY = e.clientY - dragStartRef.current.y;
-      
+
       const newX = Math.max(0, Math.min(window.innerWidth - 80, dragStartRef.current.posX + deltaX));
       const newY = Math.max(0, Math.min(window.innerHeight - 80, dragStartRef.current.posY + deltaY));
-      
+
       setPosition({ x: newX, y: newY });
     };
 
@@ -92,13 +93,12 @@ const MiniPlayerBar = () => {
       setIsDragging(false);
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
-      
-      // If barely moved, treat as click
+
       const deltaX = Math.abs(e.clientX - dragStartRef.current.x);
       const deltaY = Math.abs(e.clientY - dragStartRef.current.y);
-      
+
       if (deltaX < 5 && deltaY < 5) {
-        expandPlayer();
+        navigate("/player");
       }
     };
 
@@ -106,17 +106,17 @@ const MiniPlayerBar = () => {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
-  if (!playerState || playerState.isExpanded) return null;
+  if (!playerState) return null;
 
-  const currentSong = playerState.songs[playerState.currentIndex];
+  const currentSong = getCurrentSong();
   if (!currentSong) return null;
 
   return (
-    <div 
+    <div
       ref={dragRef}
       className="fixed z-50 cursor-grab active:cursor-grabbing select-none"
-      style={{ 
-        left: position.x, 
+      style={{
+        left: position.x,
         top: position.y,
         touchAction: "none",
       }}
@@ -133,18 +133,18 @@ const MiniPlayerBar = () => {
           <div className="w-full h-full rounded-full bg-gradient-to-br from-card to-muted border-2 border-primary/40 overflow-hidden relative animate-spin-slow">
             {/* Vinyl grooves effect */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,rgba(0,0,0,0.3)_31%,transparent_32%,transparent_40%,rgba(0,0,0,0.2)_41%,transparent_42%,transparent_50%,rgba(0,0,0,0.15)_51%,transparent_52%)]" />
-            
+
             {/* Center Hole */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="w-6 h-6 rounded-full bg-background border-2 border-primary/60 z-10 flex items-center justify-center">
                 <div className="w-2 h-2 rounded-full bg-primary/80" />
               </div>
             </div>
-            
+
             {/* Thumbnail or Icon */}
             {currentSong.thumbnail ? (
-              <img 
-                src={currentSong.thumbnail} 
+              <img
+                src={currentSong.thumbnail}
                 alt=""
                 className="w-full h-full object-cover opacity-80"
               />
@@ -155,7 +155,7 @@ const MiniPlayerBar = () => {
             )}
           </div>
         </div>
-        
+
         {/* Playing Indicator Bars */}
         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-0.5 bg-background/90 px-2 py-1 rounded-full">
           <div className="w-1 h-2 bg-primary rounded-full animate-music-bar-1"></div>

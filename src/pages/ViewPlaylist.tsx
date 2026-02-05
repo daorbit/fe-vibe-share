@@ -12,6 +12,7 @@ import { message } from "antd";
 import UserAvatar from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClickSound } from "@/hooks/useClickSound";
+import ShareDrawer from "@/components/ShareDrawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,6 +49,8 @@ const ViewPlaylist = () => {
   const [loading, setLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [shareDrawerOpen, setShareDrawerOpen] = useState(false);
+  const [shareData, setShareData] = useState({ title: "", url: "", text: "" });
   const fetchingRef = useRef(false);
   const isSaved = savedPlaylists.some(p => p.id === id);
   const isOwn = playlist?.user?._id === user?.id;
@@ -95,12 +98,12 @@ const ViewPlaylist = () => {
   const handleShareSong = (e: React.MouseEvent, song: SongLink) => {
     e.stopPropagation();
     playSound('click');
-    if (navigator.share) {
-      navigator.share({ title: song.title, url: song.url });
-    } else {
-      navigator.clipboard.writeText(song.url);
-      message.success("Link copied!");
-    }
+    setShareData({
+      title: `Share Song`,
+      url: song.url,
+      text: `Check out "${song.title}" by ${song.artist}`
+    });
+    setShareDrawerOpen(true);
   };
 
   const handleLike = async () => {
@@ -156,12 +159,12 @@ const ViewPlaylist = () => {
     
     const shareUrl = `${window.location.origin}/playlist/${id}`;
     
-    if (navigator.share) {
-      navigator.share({ title: playlist.title, url: shareUrl });
-    } else {
-      navigator.clipboard.writeText(shareUrl);
-      message.success("Link copied!");
-    }
+    setShareData({
+      title: "Share Playlist",
+      url: shareUrl,
+      text: `Check out "${playlist.title}" by ${playlist.user?.username || 'Unknown'}`
+    });
+    setShareDrawerOpen(true);
   };
 
   const handleEdit = () => {
@@ -189,15 +192,8 @@ const ViewPlaylist = () => {
   // Loading skeleton
   if (loading) {
     return (
-      <div className="min-h-screen pb-28">
-        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
-          <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto">
-            <Skeleton className="w-8 h-8 rounded-full" />
-            <Skeleton className="w-16 h-4" />
-            <Skeleton className="w-8 h-8 rounded-full" />
-          </div>
-        </header>
-        <div className="max-w-4xl mx-auto px-4 pt-6">
+      <div className="pb-28">
+        <div className="max-w-lg mx-auto px-4 pt-6">
           <div className="flex gap-4 mb-6">
             <Skeleton className="w-28 h-28 md:w-36 md:h-36 rounded-2xl flex-shrink-0" />
             <div className="flex-1 py-1">
@@ -241,28 +237,8 @@ const ViewPlaylist = () => {
   }
 
   return (
-    <div className="min-h-screen pb-28">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
-        <div className="flex items-center justify-between px-4 h-12 max-w-4xl mx-auto">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <span className="font-medium text-sm">Playlist</span>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="min-w-[140px]">
-              <DropdownMenuItem onClick={handleShare}>Copy Link</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto">
+    <div  >
+      <div className="max-w-lg mx-auto">
         {/* Hero Section - No Gradient */}
         <div className="px-4 pt-6 pb-4">
           <div className="flex gap-4">
@@ -508,6 +484,14 @@ const ViewPlaylist = () => {
           )}
         </div>
       </div>
+
+      <ShareDrawer
+        open={shareDrawerOpen}
+        onClose={() => setShareDrawerOpen(false)}
+        shareUrl={shareData.url}
+        shareTitle={shareData.title}
+        shareText={shareData.text}
+      />
     </div>
   );
 };

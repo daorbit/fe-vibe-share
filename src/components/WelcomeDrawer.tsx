@@ -13,7 +13,8 @@ const WelcomeDrawer = ({ isOpen, onClose }: WelcomeDrawerProps) => {
 
   const handleClose = () => {
     onClose();
-    setCurrentStep(0); // Reset to first step when closing
+    setCurrentStep(0);
+    localStorage.setItem("hasSeenWelcome", "true");
   };
 
   const handleNext = () => {
