@@ -1,8 +1,32 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Link2, Loader2, X, Tag, Upload, Image, Lock, Globe } from "lucide-react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  ArrowLeft,
+  Plus,
+  Link2,
+  Loader2,
+  X,
+  Tag,
+  Upload,
+  Image,
+  Lock,
+  Globe,
+} from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { usePlaylist, SongLink } from "@/contexts/PlaylistContext";
 import { useAppSelector } from "@/store/hooks";
 import { gradients } from "@/lib/songUtils";
@@ -12,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { message } from "antd";
 import AddSongSheet from "@/components/AddSongSheet";
 import SortableSongItem from "@/components/SortableSongItem";
+import ImageCropModal from "@/components/ImageCropModal";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
@@ -32,7 +57,14 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 
-const suggestedTags = ["chill", "vibes", "workout", "study", "party", "roadtrip"];
+const suggestedTags = [
+  "chill",
+  "vibes",
+  "workout",
+  "study",
+  "party",
+  "roadtrip",
+];
 
 type SongWithTempId = Omit<SongLink, "id"> & { tempId: string; id?: string };
 
@@ -61,31 +93,56 @@ type CreatePlaylistProps = {
   confirmBeforeDelete?: boolean;
 };
 
-const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete = false }: CreatePlaylistProps = {}) => {
+const CreatePlaylist = ({
+  initialData,
+  onSubmit,
+  onDelete,
+  confirmBeforeDelete = false,
+}: CreatePlaylistProps = {}) => {
   const navigate = useNavigate();
-  const { createPlaylist, addSongToPlaylist, addSongsToPlaylist } = usePlaylist();
+  const { createPlaylist, addSongToPlaylist, addSongsToPlaylist } =
+    usePlaylist();
   const user = useAppSelector((state) => state.auth.user);
   const isLoggedIn = !!user;
   const isMobile = useIsMobile();
-  
+
   const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(initialData?.description || "");
-  const [selectedGradient, setSelectedGradient] = useState(initialData?.coverGradient || gradients[0]);
-  const [songs, setSongs] = useState<SongWithTempId[]>((initialData?.songs || []).map(s => ({...s, tempId: s.id || crypto.randomUUID()})));
-  const [songToDelete, setSongToDelete] = useState<{ tempId: string; title: string; id?: string } | null>(null);
+  const [description, setDescription] = useState(
+    initialData?.description || "",
+  );
+  const [selectedGradient, setSelectedGradient] = useState(
+    initialData?.coverGradient || gradients[0],
+  );
+  const [songs, setSongs] = useState<SongWithTempId[]>(
+    (initialData?.songs || []).map((s) => ({
+      ...s,
+      tempId: s.id || crypto.randomUUID(),
+    })),
+  );
+  const [songToDelete, setSongToDelete] = useState<{
+    tempId: string;
+    title: string;
+    id?: string;
+  } | null>(null);
   const [isDeletingSong, setIsDeletingSong] = useState(false);
   const [tags, setTags] = useState<string[]>(initialData?.tags || []);
   const [tagInput, setTagInput] = useState("");
   const [showAddSong, setShowAddSong] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
-  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(initialData?.thumbnailUrl || null);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(
+    initialData?.thumbnailUrl || null,
+  );
   const [removeThumbnail, setRemoveThumbnail] = useState(false);
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true);
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string>("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   useEffect(() => {
@@ -103,7 +160,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(t => t !== tagToRemove));
+    setTags(tags.filter((t) => t !== tagToRemove));
   };
 
   const handleTagInputKeyDown = (e: React.KeyboardEvent) => {
@@ -119,12 +176,12 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
 
   const handleRemoveSong = (tempId: string) => {
     if (confirmBeforeDelete) {
-      const song = songs.find(s => s.tempId === tempId);
+      const song = songs.find((s) => s.tempId === tempId);
       if (song) {
         setSongToDelete({ tempId, title: song.title, id: song.id });
       }
     } else {
-      setSongs(songs.filter(s => s.tempId !== tempId));
+      setSongs(songs.filter((s) => s.tempId !== tempId));
     }
   };
 
@@ -135,14 +192,14 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
         // If the song has an id, it's already saved in the database, so delete it
         if (songToDelete.id) {
           await playlistsAPI.deleteSong(songToDelete.id);
-          message.success('Song removed');
+          message.success("Song removed");
         }
         // Remove from local state
-        setSongs(songs.filter(s => s.tempId !== songToDelete.tempId));
+        setSongs(songs.filter((s) => s.tempId !== songToDelete.tempId));
         setSongToDelete(null);
       } catch (err) {
-        console.error('Failed to delete song:', err);
-        message.error('Failed to remove song');
+        console.error("Failed to delete song:", err);
+        message.error("Failed to remove song");
       } finally {
         setIsDeletingSong(false);
       }
@@ -153,32 +210,50 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
     const { active, over } = event;
     if (over && active.id !== over.id) {
       setSongs((items) => {
-        const oldIndex = items.findIndex(i => i.tempId === active.id);
-        const newIndex = items.findIndex(i => i.tempId === over.id);
+        const oldIndex = items.findIndex((i) => i.tempId === active.id);
+        const newIndex = items.findIndex((i) => i.tempId === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   };
 
-  const handleThumbnailSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailSelect = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         message.error("Image must be less than 5MB");
         return;
       }
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         message.error("Please select an image file");
         return;
       }
-      
-      setThumbnailFile(file);
+
+      // Show image in crop modal
       const reader = new FileReader();
       reader.onload = (e) => {
-        setThumbnailPreview(e.target?.result as string);
+        setImageToCrop(e.target?.result as string);
+        setCropModalOpen(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedImageBlob: Blob) => {
+    // Convert blob to file
+    const croppedFile = new File([croppedImageBlob], "playlist-thumbnail.jpg", {
+      type: "image/jpeg",
+    });
+
+    setThumbnailFile(croppedFile);
+
+    // Create preview URL from blob
+    const previewUrl = URL.createObjectURL(croppedImageBlob);
+    setThumbnailPreview(previewUrl);
+    setRemoveThumbnail(false);
   };
 
   const handleRemoveThumbnail = () => {
@@ -214,25 +289,31 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
         description: payload.description,
         coverGradient: payload.coverGradient,
         tags: payload.tags,
-        isPublic: payload.isPublic
+        isPublic: payload.isPublic,
       });
 
       // Add all new songs in a single batch request
-      const newSongs = songs.filter(song => !song.id);
+      const newSongs = songs.filter((song) => !song.id);
       if (newSongs.length > 0) {
-        await addSongsToPlaylist(playlist.id, newSongs.map(song => ({
-          title: song.title,
-          artist: song.artist,
-          url: song.url,
-          platform: song.platform,
-        })));
+        await addSongsToPlaylist(
+          playlist.id,
+          newSongs.map((song) => ({
+            title: song.title,
+            artist: song.artist,
+            url: song.url,
+            platform: song.platform,
+          })),
+        );
       }
 
       if (thumbnailFile) {
         try {
-          await playlistsAPI.uploadPlaylistThumbnail(playlist.id, thumbnailFile);
+          await playlistsAPI.uploadPlaylistThumbnail(
+            playlist.id,
+            thumbnailFile,
+          );
         } catch (thumbnailError) {
-          console.error('Failed to upload thumbnail:', thumbnailError);
+          console.error("Failed to upload thumbnail:", thumbnailError);
           message.error("Playlist created, but thumbnail upload failed");
         }
       }
@@ -240,7 +321,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
       message.success("Playlist created successfully!");
       navigate(`/playlist/${playlist.id}`);
     } catch (err) {
-      console.error('Failed to create/update playlist:', err);
+      console.error("Failed to create/update playlist:", err);
       message.error("Failed to save playlist");
     } finally {
       setIsCreating(false);
@@ -254,13 +335,15 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
         {/* Cover + Title Row */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className={`w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden ${
-              thumbnailPreview ? '' : `bg-gradient-to-br ${selectedGradient}`
-            }`}>
+            <div
+              className={`w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden ${
+                thumbnailPreview ? "" : `bg-gradient-to-br ${selectedGradient}`
+              }`}
+            >
               {thumbnailPreview ? (
-                <img 
-                  src={thumbnailPreview} 
-                  alt="Thumbnail preview" 
+                <img
+                  src={thumbnailPreview}
+                  alt="Thumbnail preview"
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -291,7 +374,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
             />
           </div>
         </div>
-        
+
         {/* Compact Color Picker */}
         <div className="flex gap-1.5 flex-wrap">
           {gradients.map((gradient, index) => (
@@ -299,8 +382,8 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
               key={index}
               onClick={() => setSelectedGradient(gradient)}
               className={`w-7 h-7 rounded-full bg-gradient-to-br ${gradient} transition-all ${
-                selectedGradient === gradient 
-                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110" 
+                selectedGradient === gradient
+                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-110"
                   : "hover:scale-105"
               }`}
             />
@@ -318,10 +401,10 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
           />
           <label
             htmlFor="thumbnail-upload"
-             className="flex items-center gap-1.5 px-2 py-1.5 bg-muted hover:bg-muted/80 rounded-[8px] cursor-pointer transition-colors text-xs"
+            className="flex items-center gap-1.5 px-2 py-1.5 bg-muted hover:bg-muted/80 rounded-[8px] cursor-pointer transition-colors text-xs"
           >
             <Upload className="w-3 h-3" />
-            {thumbnailFile ? 'Change' : 'Upload'}
+            {thumbnailFile ? "Change" : "Upload"}
           </label>
           {thumbnailFile && (
             <span className="text-[10px] text-muted-foreground truncate max-w-[120px]">
@@ -334,9 +417,14 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
         <div className="flex flex-wrap items-center gap-1.5">
           <Tag className="w-3.5 h-3.5 text-muted-foreground" />
           {tags.map((tag) => (
-            <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 bg-primary/15 text-primary rounded-full text-xs font-medium">
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1 px-2 py-1 bg-primary/15 text-primary rounded-full text-xs font-medium"
+            >
               #{tag}
-              <button onClick={() => handleRemoveTag(tag)}><X className="w-3 h-3" /></button>
+              <button onClick={() => handleRemoveTag(tag)}>
+                <X className="w-3 h-3" />
+              </button>
             </span>
           ))}
           {tags.length < 5 && (
@@ -349,19 +437,21 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
             />
           )}
         </div>
-        
+
         {/* Quick suggested tags */}
         {tags.length < 5 && (
           <div className="flex flex-wrap gap-1.5">
-            {suggestedTags.filter(t => !tags.includes(t)).map((tag) => (
-              <button 
-                key={tag} 
-                onClick={() => handleAddTag(tag)} 
-                className="px-2 py-0.5 bg-muted hover:bg-muted/80 rounded-full text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-              >
-                #{tag}
-              </button>
-            ))}
+            {suggestedTags
+              .filter((t) => !tags.includes(t))
+              .map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => handleAddTag(tag)}
+                  className="px-2 py-0.5 bg-muted hover:bg-muted/80 rounded-full text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  #{tag}
+                </button>
+              ))}
           </div>
         )}
 
@@ -374,21 +464,25 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
               <Lock className="w-4 h-4 text-muted-foreground" />
             )}
             <div>
-              <p className="text-sm font-medium">{isPublic ? 'Public' : 'Private'}</p>
+              <p className="text-sm font-medium">
+                {isPublic ? "Public" : "Private"}
+              </p>
               <p className="text-xs text-muted-foreground">
-                {isPublic ? 'Anyone can see this playlist' : 'Only you can see this playlist'}
+                {isPublic
+                  ? "Anyone can see this playlist"
+                  : "Only you can see this playlist"}
               </p>
             </div>
           </div>
           <button
             onClick={() => setIsPublic(!isPublic)}
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-              isPublic ? 'bg-primary' : 'bg-muted-foreground/30'
+              isPublic ? "bg-primary" : "bg-muted-foreground/30"
             }`}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                isPublic ? 'translate-x-6' : 'translate-x-1'
+                isPublic ? "translate-x-6" : "translate-x-1"
               }`}
             />
           </button>
@@ -409,7 +503,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
         </div>
 
         {songs.length === 0 ? (
-          <button 
+          <button
             onClick={() => setShowAddSong(true)}
             className="w-full py-10 border-2 border-dashed border-border/50 rounded-xl flex flex-col items-center gap-2 text-muted-foreground hover:border-primary/30 hover:text-foreground transition-colors"
           >
@@ -420,8 +514,15 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
             <span className="text-xs">YouTube, Spotify, SoundCloud...</span>
           </button>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={songs.map(s => s.tempId)} strategy={verticalListSortingStrategy}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={songs.map((s) => s.tempId)}
+              strategy={verticalListSortingStrategy}
+            >
               <div className="space-y-2">
                 {songs.map((song, index) => (
                   <SortableSongItem
@@ -457,12 +558,16 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
 
       {/* Song Delete Confirmation */}
       {isMobile ? (
-        <Sheet open={!!songToDelete} onOpenChange={(open) => !open && setSongToDelete(null)}>
+        <Sheet
+          open={!!songToDelete}
+          onOpenChange={(open) => !open && setSongToDelete(null)}
+        >
           <SheetContent side="top" className="max-h-[50vh] overflow-y-auto">
             <SheetHeader>
               <SheetTitle>Delete Song</SheetTitle>
               <SheetDescription>
-                Are you sure you want to remove "{songToDelete?.title}" from this playlist?
+                Are you sure you want to remove "{songToDelete?.title}" from
+                this playlist?
               </SheetDescription>
             </SheetHeader>
             <SheetFooter className="flex-row gap-2 mt-4">
@@ -485,17 +590,23 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
           </SheetContent>
         </Sheet>
       ) : (
-        <AlertDialog open={!!songToDelete} onOpenChange={(open) => !open && setSongToDelete(null)}>
+        <AlertDialog
+          open={!!songToDelete}
+          onOpenChange={(open) => !open && setSongToDelete(null)}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Song</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to remove "{songToDelete?.title}" from this playlist?
+                Are you sure you want to remove "{songToDelete?.title}" from
+                this playlist?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeletingSong}>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogCancel disabled={isDeletingSong}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
                 onClick={confirmRemoveSong}
                 disabled={isDeletingSong}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-[8px] disabled:opacity-50 flex items-center gap-2"
@@ -507,7 +618,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
           </AlertDialogContent>
         </AlertDialog>
       )}
-      
+
       {/* Fixed Bottom Bar with Delete, Cancel and Save/Create Buttons */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/30">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-2">
@@ -523,7 +634,7 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
               Delete Playlist
             </Button>
           )}
-          
+
           {/* Cancel and Save Row */}
           <div className="flex gap-3">
             <Button
@@ -544,15 +655,27 @@ const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete =
               {isCreating ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  {initialData ? 'Saving...' : 'Creating...'}
+                  {initialData ? "Saving..." : "Creating..."}
                 </>
+              ) : initialData ? (
+                "Update"
               ) : (
-                initialData ? 'Update' : 'Save'
+                "Save"
               )}
             </Button>
           </div>
         </div>
       </div>
+      {cropModalOpen && (
+        <ImageCropModal
+          open={cropModalOpen}
+          imageSrc={imageToCrop}
+          cropShape="rect"
+          aspect={1}
+          onClose={() => setCropModalOpen(false)}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 };

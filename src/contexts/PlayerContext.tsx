@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { SongLink } from "./PlaylistContext";
 
@@ -31,6 +31,34 @@ interface PlayerContextType {
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
 
+const PLAYER_STATE_KEY = 'vibe_player_state';
+
+// Helper to load player state from localStorage
+const loadPlayerState = (): PlayerState | null => {
+  try {
+    const saved = localStorage.getItem(PLAYER_STATE_KEY);
+    if (saved) {
+      return JSON.parse(saved);
+    }
+  } catch (error) {
+    console.error('Failed to load player state:', error);
+  }
+  return null;
+};
+
+// Helper to save player state to localStorage
+const savePlayerState = (state: PlayerState | null) => {
+  try {
+    if (state) {
+      localStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(state));
+    } else {
+      localStorage.removeItem(PLAYER_STATE_KEY);
+    }
+  } catch (error) {
+    console.error('Failed to save player state:', error);
+  }
+};
+
 export const usePlayer = () => {
   const context = useContext(PlayerContext);
   if (!context) {
@@ -40,9 +68,14 @@ export const usePlayer = () => {
 };
 
 export const PlayerProvider = ({ children }: { children: ReactNode }) => {
-  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+  const [playerState, setPlayerState] = useState<PlayerState | null>(() => loadPlayerState());
   const [isPlaying, setIsPlaying] = useState(false);
   const navigate = useNavigate();
+
+  // Save player state to localStorage whenever it changes
+  useEffect(() => {
+    savePlayerState(playerState);
+  }, [playerState]);
 
   const playSongs = useCallback((
     songs: SongLink[], 
@@ -138,6 +171,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const closePlayer = useCallback(() => {
     setPlayerState(null);
     setIsPlaying(false);
+    localStorage.removeItem(PLAYER_STATE_KEY);
   }, []);
 
   const removeSongFromQueue = useCallback((index: number) => {

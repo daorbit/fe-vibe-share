@@ -25,7 +25,8 @@ const getEmbedUrl = (url: string, platform: string): string | null => {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match?.[1]) {
-        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1`;
+        // Hide YouTube branding: modestbranding, no annotations, no captions, no fullscreen, playsinline
+        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&fs=0&playsinline=1`;
       }
     }
   }

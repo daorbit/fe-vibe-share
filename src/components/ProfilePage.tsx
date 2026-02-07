@@ -1,4 +1,4 @@
-import { Settings, Grid3X3, Bookmark, Share2, LogOut, Plus, Edit3, Instagram, Twitter, Youtube, Music, Link2, RefreshCw, Lock } from "lucide-react";
+import { Settings, Grid3X3, Bookmark, Share2, LogOut, Plus, Edit3, Instagram, Twitter, Youtube, Music, Link2, RefreshCw, Lock, Music2 as Music2Icon } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
@@ -172,6 +172,17 @@ const ProfilePage = () => {
             New Playlist
           </button>
         </div>
+
+        {/* Quick Access Button */}
+        {/* <div className="mb-5">
+          <button 
+            onClick={() => navigate('/saved-songs')}
+            className="w-full h-10 px-4 bg-gradient-to-r from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors border border-primary/20"
+          >
+            <Music2Icon className="w-4 h-4 text-primary" />
+            <span>Saved Songs</span>
+          </button>
+        </div> */}
 
         {/* Tabs */}
         <div className="flex border-b border-border mb-4">

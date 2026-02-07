@@ -7,6 +7,7 @@ import { usePlayer } from "@/contexts/PlayerContext";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { likePlaylist, unlikePlaylist } from "@/store/slices/playlistSlice";
 import { getPlatformColor, getPlatformIcon } from "@/lib/songUtils";
+import { playlistsAPI } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { message } from "antd";
 import UserAvatar from "@/components/UserAvatar";
@@ -51,6 +52,7 @@ const ViewPlaylist = () => {
   const [likeCount, setLikeCount] = useState(0);
   const [shareDrawerOpen, setShareDrawerOpen] = useState(false);
   const [shareData, setShareData] = useState({ title: "", url: "", text: "" });
+  const [savedSongIds, setSavedSongIds] = useState<Set<string>>(new Set());
   const fetchingRef = useRef(false);
   const isSaved = savedPlaylists.some(p => p.id === id);
   const isOwn = playlist?.user?._id === user?.id;
@@ -62,6 +64,22 @@ const ViewPlaylist = () => {
       setLikeCount(playlist.likesCount || 0);
     }
   }, [playlist]);
+
+  useEffect(() => {
+    const fetchSavedSongs = async () => {
+      if (!isLoggedIn) return;
+      try {
+        const response = await playlistsAPI.getSavedSongs({ limit: 1000 });
+        const savedIds = new Set(
+          (response.data?.songs || []).map((saved: any) => saved.songId?._id || saved.songId)
+        );
+        setSavedSongIds(savedIds);
+      } catch (error) {
+        console.error('Failed to fetch saved songs:', error);
+      }
+    };
+    fetchSavedSongs();
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const fetchPlaylist = async () => {
@@ -104,6 +122,52 @@ const ViewPlaylist = () => {
       text: `Check out "${song.title}" by ${song.artist}`
     });
     setShareDrawerOpen(true);
+  };
+
+  const handleSaveSong = async (e: React.MouseEvent, song: any) => {
+    e.stopPropagation();
+    playSound('pop');
+    
+    if (!isLoggedIn) {
+      navigate("/sign-in");
+      return;
+    }
+
+    const songId = song._id || song.id;
+    const isSongSaved = savedSongIds.has(songId);
+
+    // Optimistic update
+    setSavedSongIds(prev => {
+      const newSet = new Set(prev);
+      if (isSongSaved) {
+        newSet.delete(songId);
+      } else {
+        newSet.add(songId);
+      }
+      return newSet;
+    });
+
+    try {
+      if (isSongSaved) {
+        await playlistsAPI.unsaveSong(songId);
+        message.success("Song removed from saved");
+      } else {
+        await playlistsAPI.saveSong(songId);
+        message.success("Song saved");
+      }
+    } catch (error: any) {
+      // Revert on error
+      setSavedSongIds(prev => {
+        const newSet = new Set(prev);
+        if (isSongSaved) {
+          newSet.add(songId);
+        } else {
+          newSet.delete(songId);
+        }
+        return newSet;
+      });
+      message.error(error?.message || "Failed to update saved song");
+    }
   };
 
   const handleLike = async () => {
@@ -462,6 +526,19 @@ const ViewPlaylist = () => {
                         <Play className="w-3 h-3 fill-current" />
                         Play
                       </button>
+                      {isLoggedIn && (
+                        <button 
+                          type="button"
+                          onClick={(e) => handleSaveSong(e, song)}
+                          className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors touch-manipulation ${
+                            savedSongIds.has(song._id || song.id)
+                              ? "bg-primary/90 text-primary-foreground hover:bg-primary"
+                              : "bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          <Bookmark className={`w-3 h-3 ${savedSongIds.has(song._id || song.id) ? "fill-current" : ""}`} />
+                        </button>
+                      )}
                       <button 
                         type="button"
                         onClick={(e) => handleOpenExternal(e, song)}

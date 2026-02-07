@@ -272,6 +272,33 @@ export const playlistsAPI = {
     return handleResponse(response);
   },
 
+  saveSong: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/playlists/songs/${id}/save`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  unsaveSong: async (id: string) => {
+    const response = await fetch(`${API_BASE_URL}/playlists/songs/${id}/save`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
+  getSavedSongs: async (params?: { page?: number; limit?: number }) => {
+    const query = new URLSearchParams();
+    if (params?.page) query.set('page', params.page.toString());
+    if (params?.limit) query.set('limit', params.limit.toString());
+
+    const response = await fetch(`${API_BASE_URL}/playlists/songs/saved?${query}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
+
   getPlaylistSongs: async (id: string) => {
     const response = await fetch(`${API_BASE_URL}/playlists/${id}/songs`, {
       headers: getAuthHeaders(),

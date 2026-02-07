@@ -28,7 +28,15 @@ const getEmbedUrl = (url: string, platform: string): string | null => {
     for (const pattern of patterns) {
       const match = url.match(pattern);
       if (match?.[1]) {
-        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1`;
+        // Hide as many YouTube icons/branding as possible:
+        // - modestbranding=1: removes YouTube logo from control bar
+        // - rel=0: only show related videos from same channel
+        // - iv_load_policy=3: disable video annotations
+        // - cc_load_policy=0: disable closed captions by default
+        // - fs=0: hide fullscreen button
+        // - playsinline=1: play inline on mobile
+        // - enablejsapi=1: enable JS API for auto-advance
+        return `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1&modestbranding=1&iv_load_policy=3&cc_load_policy=0&fs=0&playsinline=1`;
       }
     }
   }

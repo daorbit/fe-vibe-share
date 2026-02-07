@@ -154,7 +154,7 @@ const ShareDrawer = ({
       onClose={onClose}
       open={open}
       height="auto"
-      className="share-drawer rounded-t-3xl z-50"
+      className="share-drawer rounded-t-3xl z-50 max-w-lg mx-auto"
       closeIcon={null}
       styles={{
         body: { padding: "0", background: "#1a1a1a" },
