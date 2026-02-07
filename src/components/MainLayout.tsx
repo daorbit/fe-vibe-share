@@ -2,6 +2,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import FloatingNav from "./FloatingNav";
 import WelcomeDrawer from "./WelcomeDrawer";
 import TopNav from "./TopNav";
+import OfflineIndicator from "./OfflineIndicator";
 import { useWelcome } from "@/contexts/WelcomeContext";
 import { useNotificationPolling } from "@/hooks/useNotificationPolling";
 import { useAppSelector } from "@/store/hooks";
@@ -29,6 +30,9 @@ const MainLayout = () => {
 
   return (
     <div className="h-screen-mobile flex flex-col overflow-hidden">
+      {/* Offline Indicator */}
+      <OfflineIndicator />
+      
       {/* Sticky Header */}
       <TopNav />
       

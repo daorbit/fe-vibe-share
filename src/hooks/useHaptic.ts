@@ -3,7 +3,7 @@
  * Provides tactile feedback on supported mobile devices
  */
 
-type HapticType = 'light' | 'medium' | 'heavy' | 'success' | 'error';
+type HapticType = 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning' | 'selection' | 'impact';
 
 const vibrationPatterns: Record<HapticType, number | number[]> = {
   light: 10,
@@ -11,6 +11,9 @@ const vibrationPatterns: Record<HapticType, number | number[]> = {
   heavy: 50,
   success: [10, 50, 10],
   error: [50, 30, 50],
+  warning: [30, 20, 30],
+  selection: 5,
+  impact: [15, 30, 15, 30],
 };
 
 export const useHaptic = () => {

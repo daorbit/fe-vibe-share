@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import CreatePlaylist from "./CreatePlaylist";
 import { usePlaylist } from "@/contexts/PlaylistContext";
 import { fetchFeedPlaylists } from "@/store/slices/playlistSlice";
@@ -8,6 +7,7 @@ import { useAppDispatch } from "@/store/hooks";
 import { playlistsAPI } from "@/lib/api";
 import { message } from "antd";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -157,8 +157,82 @@ const EditPlaylist = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      <div className="min-h-screen bg-background pb-24">
+        {/* Header Skeleton */}
+        <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/30">
+          <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
+            <Skeleton className="w-8 h-8 rounded-full" />
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="w-8 h-8 rounded-full" />
+          </div>
+        </header>
+
+        <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
+          {/* Cover + Title Row Skeleton */}
+          <div className="flex items-center gap-3">
+            <Skeleton className="w-20 h-20 rounded-xl" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-8 w-full rounded-lg" />
+              <Skeleton className="h-8 w-full rounded-lg" />
+            </div>
+          </div>
+          
+          {/* Color Picker Skeleton */}
+          <div className="flex gap-1.5 flex-wrap">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="w-7 h-7 rounded-full" />
+            ))}
+          </div>
+
+          {/* Upload Button Skeleton */}
+          <Skeleton className="h-8 w-20 rounded-lg" />
+
+          {/* Tags Skeleton */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <Skeleton className="w-4 h-4" />
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-6 w-16 rounded-full" />
+            ))}
+          </div>
+
+          {/* Privacy Toggle Skeleton */}
+          <Skeleton className="h-16 w-full rounded-xl" />
+        </div>
+
+        {/* Songs Section Skeleton */}
+        <div className="max-w-lg mx-auto px-4">
+          <div className="flex items-center justify-between py-3 border-t border-border/30">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-5 w-12" />
+          </div>
+          
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-2 p-2 bg-card rounded-xl">
+                <Skeleton className="w-6 h-6" />
+                <Skeleton className="w-14 h-10 rounded-lg" />
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-4 w-40 mb-1" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="w-6 h-6" />
+                <Skeleton className="w-6 h-6" />
+                <Skeleton className="w-6 h-6" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom Bar Skeleton */}
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/30">
+          <div className="max-w-lg mx-auto px-4 py-3 space-y-2">
+            <Skeleton className="h-10 w-full rounded-lg" />
+            <div className="flex gap-3">
+              <Skeleton className="flex-1 h-10 rounded-lg" />
+              <Skeleton className="flex-1 h-10 rounded-lg" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -185,20 +259,9 @@ const EditPlaylist = () => {
           isPublic: playlist.isPublic ?? true,
         }}
         onSubmit={handleSubmit}
+        onDelete={handleDelete}
         confirmBeforeDelete={true}
       />
-
-      {/* Delete action placed below the form so user can delete here as well */}
-      <div className="max-w-lg mx-auto px-4 pb-8">
-        <div className="pt-6 border-t border-border">
-          <button
-            onClick={handleDelete}
-            className="w-full py-3 bg-destructive text-destructive-foreground rounded-lg"
-          >
-            Delete Playlist
-          </button>
-        </div>
-      </div>
 
       {/* Confirmation Dialog/Sheet */}
       {isMobile ? (

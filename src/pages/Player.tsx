@@ -6,6 +6,7 @@ import {
   Music2,
   List,
   ChevronLeft,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +15,8 @@ import { cn } from "@/lib/utils";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { getPlatformColor, getPlatformIcon } from "@/lib/songUtils";
 import { PlaylistsTab } from "@/components/player/PlaylistsTab";
+import QueueItem from "@/components/SwipeableQueueItem";
+import { triggerHaptic } from "@/hooks/useHaptic";
 
 const getEmbedUrl = (url: string, platform: string): string | null => {
   if (platform === "YouTube") {
@@ -157,15 +160,21 @@ const Player = () => {
   return (
     <div className="max-w-lg mx-auto h-screen bg-background flex flex-col overflow-hidden">
       {/* Compact Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-card border-b border-border/30 shrink-0">
-        <div className="flex items-center gap-2 min-w-0 flex-1">
+      <div className="flex items-center justify-between px-3 py-2 bg-card border-b border-border/30 shrink-0 relative">
+        {/* Swipe indicator */}
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-muted-foreground/30" />
+        
+        <div className="flex items-center gap-2 min-w-0 flex-1 pt-1">
           <Button
             variant="ghost"
             size="icon"
             className="h-8 w-8 hover:bg-muted/50 shrink-0"
-            onClick={() => navigate(-1)}
+            onClick={() => {
+              triggerHaptic("light");
+              navigate(-1);
+            }}
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronDown className="w-4 h-4" />
           </Button>
           <div className="flex items-end gap-[2px] h-3 shrink-0">
             <div className="w-[3px] bg-primary rounded-sm animate-music-bar-1"></div>
@@ -181,7 +190,7 @@ const Player = () => {
             </p>
           </div>
         </div>
-        <div className="flex items-center shrink-0">
+        <div className="flex items-center shrink-0 pt-1">
           <Button
             variant="ghost"
             size="icon"
@@ -235,7 +244,10 @@ const Player = () => {
 
       {/* Tabs: Queue | Playlists */}
       <div className="flex-1 flex flex-col min-h-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+        <Tabs value={activeTab} onValueChange={(tab) => {
+          setActiveTab(tab);
+          triggerHaptic("selection");
+        }} className="flex-1 flex flex-col min-h-0">
           <TabsList className="w-full grid grid-cols-2 bg-muted/30 border-y border-border/20 rounded-none h-10 shrink-0">
             <TabsTrigger
               value="queue"
@@ -256,6 +268,8 @@ const Player = () => {
           {/* Queue Tab */}
           <TabsContent value="queue" className="flex-1 mt-0 overflow-hidden">
             <ScrollArea className="h-full">
+              {/* Swipe hint */}
+              
               {/* Now Playing from Temporary Playlist */}
               {isPlayingFromTemporary && playerState.temporarySongs && (
                 <div className="border-b-2 border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
@@ -264,41 +278,12 @@ const Player = () => {
                       Now Playing from: {playerState.temporaryPlaylistTitle}
                     </p>
                   </div>
-                  <div className="bg-primary/10">
-                    <button
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left"
-                      disabled
-                    >
-                      <div className="w-5 shrink-0 flex justify-center">
-                        <div className="flex items-center gap-[2px]">
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-1"></div>
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-2"></div>
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-3"></div>
-                        </div>
-                      </div>
-                      {playerState.temporarySongs[playerState.temporaryIndex].thumbnail ? (
-                        <img
-                          src={playerState.temporarySongs[playerState.temporaryIndex].thumbnail}
-                          alt=""
-                          className="w-12 h-9 rounded object-cover shrink-0"
-                        />
-                      ) : (
-                        <div
-                          className={`w-12 h-9 rounded flex items-center justify-center shrink-0 ${getPlatformColor(playerState.temporarySongs[playerState.temporaryIndex].platform)}`}
-                        >
-                          {getPlatformIcon(playerState.temporarySongs[playerState.temporaryIndex].platform)}
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-normal leading-tight line-clamp-2 text-foreground">
-                          {playerState.temporarySongs[playerState.temporaryIndex].title}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                          {playerState.temporarySongs[playerState.temporaryIndex].artist}
-                        </p>
-                      </div>
-                    </button>
-                  </div>
+                  <QueueItem
+                    song={playerState.temporarySongs[playerState.temporaryIndex]}
+                    index={playerState.temporaryIndex}
+                    isActive={true}
+                    onSelect={() => {}}
+                  />
                 </div>
               )}
 
@@ -313,57 +298,14 @@ const Player = () => {
                   </div>
                 )}
                 {playerState.songs.map((song, index) => (
-                  <button
-                    ref={index === playerState.currentIndex && !isPlayingFromTemporary ? currentSongRef : null}
+                  <QueueItem
                     key={song.id || index}
-                    onClick={() => setCurrentIndex(index)}
-                    className={cn(
-                      "w-full flex items-center gap-2 px-3 py-2 text-left transition-colors border-b border-border/10",
-                      index === playerState.currentIndex && !isPlayingFromTemporary
-                        ? "bg-primary/10"
-                        : "hover:bg-muted/30",
-                    )}
-                  >
-                    <div className="w-5 shrink-0 flex justify-center">
-                      {index === playerState.currentIndex && !isPlayingFromTemporary ? (
-                        <div className="flex items-center gap-[2px]">
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-1"></div>
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-2"></div>
-                          <div className="w-[2px] h-2 bg-primary rounded-sm animate-music-bar-3"></div>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground">{index + 1}</span>
-                      )}
-                    </div>
-                    {song.thumbnail ? (
-                      <img
-                        src={song.thumbnail}
-                        alt=""
-                        className="w-12 h-9 rounded object-cover shrink-0"
-                      />
-                    ) : (
-                      <div
-                        className={`w-12 h-9 rounded flex items-center justify-center shrink-0 ${getPlatformColor(song.platform)}`}
-                      >
-                        {getPlatformIcon(song.platform)}
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p
-                        className={cn(
-                          "text-xs font-normal leading-tight line-clamp-2",
-                          index === playerState.currentIndex && !isPlayingFromTemporary
-                            ? "text-foreground"
-                            : "text-foreground/80",
-                        )}
-                      >
-                        {song.title}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                        {song.artist}
-                      </p>
-                    </div>
-                  </button>
+                    innerRef={index === playerState.currentIndex && !isPlayingFromTemporary ? currentSongRef : undefined}
+                    song={song}
+                    index={index}
+                    isActive={index === playerState.currentIndex && !isPlayingFromTemporary}
+                    onSelect={() => setCurrentIndex(index)}
+                  />
                 ))}
               </div>
             </ScrollArea>

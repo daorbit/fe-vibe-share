@@ -57,10 +57,11 @@ type CreatePlaylistProps = {
     removeThumbnail?: boolean;
     isPublic: boolean;
   }) => Promise<void>;
+  onDelete?: () => void;
   confirmBeforeDelete?: boolean;
 };
 
-const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: CreatePlaylistProps = {}) => {
+const CreatePlaylist = ({ initialData, onSubmit, onDelete, confirmBeforeDelete = false }: CreatePlaylistProps = {}) => {
   const navigate = useNavigate();
   const { createPlaylist, addSongToPlaylist, addSongsToPlaylist } = usePlaylist();
   const user = useAppSelector((state) => state.auth.user);
@@ -247,7 +248,7 @@ const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: 
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-10">
       {/* Main Content */}
       <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
         {/* Cover + Title Row */}
@@ -507,33 +508,49 @@ const CreatePlaylist = ({ initialData, onSubmit, confirmBeforeDelete = false }: 
         </AlertDialog>
       )}
       
-      {/* Fixed Bottom Bar with Cancel and Save/Create Buttons */}
+      {/* Fixed Bottom Bar with Delete, Cancel and Save/Create Buttons */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-xl border-t border-border/30">
-        <div className="max-w-lg mx-auto px-4 py-3 flex gap-3">
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => navigate(-1)}
-            disabled={isCreating}
-            className="flex-1 h-10 rounded-lg font-semibold"
-          >
-            Cancel
-          </Button>
-          <Button
-            size="lg"
-            onClick={handleCreate}
-            disabled={!title.trim() || isCreating}
-            className="flex-1 h-10 rounded-lg font-semibold"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                {initialData ? 'Saving...' : 'Creating...'}
-              </>
-            ) : (
-              initialData ? 'Update' : 'Save'
-            )}
-          </Button>
+        <div className="max-w-lg mx-auto px-4 py-3 space-y-2">
+          {/* Delete Button (only in edit mode) */}
+          {initialData && onDelete && (
+            <Button
+              size="lg"
+              variant="destructive"
+              onClick={onDelete}
+              disabled={isCreating}
+              className="w-full h-10 rounded-lg font-semibold"
+            >
+              Delete Playlist
+            </Button>
+          )}
+          
+          {/* Cancel and Save Row */}
+          <div className="flex gap-3">
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate(-1)}
+              disabled={isCreating}
+              className="flex-1 h-10 rounded-lg font-semibold"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="lg"
+              onClick={handleCreate}
+              disabled={!title.trim() || isCreating}
+              className="flex-1 h-10 rounded-lg font-semibold"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  {initialData ? 'Saving...' : 'Creating...'}
+                </>
+              ) : (
+                initialData ? 'Update' : 'Save'
+              )}
+            </Button>
+          </div>
         </div>
       </div>
     </div>

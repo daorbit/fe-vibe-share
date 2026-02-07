@@ -3,14 +3,20 @@ import { Music2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePlayer } from "@/contexts/PlayerContext";
 import { getPlatformColor } from "@/lib/songUtils";
+import { triggerHaptic } from "@/hooks/useHaptic";
+import { cn } from "@/lib/utils";
+
+const SWIPE_UP_THRESHOLD = 50;
 
 const MiniPlayerBar = () => {
   const navigate = useNavigate();
   const { playerState, getCurrentSong } = usePlayer();
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [swipeHint, setSwipeHint] = useState(false);
   const dragRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
+  const swipeStartYRef = useRef(0);
 
   // Initialize position to bottom-right
   useEffect(() => {
@@ -28,6 +34,19 @@ const MiniPlayerBar = () => {
     return () => window.removeEventListener("resize", updatePosition);
   }, []);
 
+  // Show swipe hint on first render
+  useEffect(() => {
+    const hasSeenHint = localStorage.getItem("miniPlayerSwipeHint");
+    if (!hasSeenHint && playerState) {
+      setSwipeHint(true);
+      const timer = setTimeout(() => {
+        setSwipeHint(false);
+        localStorage.setItem("miniPlayerSwipeHint", "true");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [playerState]);
+
   const handleTouchStart = (e: React.TouchEvent) => {
     e.stopPropagation();
     const touch = e.touches[0];
@@ -37,6 +56,7 @@ const MiniPlayerBar = () => {
       posX: position.x,
       posY: position.y,
     };
+    swipeStartYRef.current = touch.clientY;
     setIsDragging(true);
   };
 
@@ -61,9 +81,19 @@ const MiniPlayerBar = () => {
 
     const touch = e.changedTouches[0];
     const deltaX = Math.abs(touch.clientX - dragStartRef.current.x);
-    const deltaY = Math.abs(touch.clientY - dragStartRef.current.y);
+    const deltaY = touch.clientY - swipeStartYRef.current;
+    const totalMovement = Math.abs(deltaX) + Math.abs(touch.clientY - dragStartRef.current.y);
 
-    if (deltaX < 5 && deltaY < 5) {
+    // Swipe up to open player
+    if (deltaY < -SWIPE_UP_THRESHOLD && Math.abs(deltaX) < 30) {
+      triggerHaptic("medium");
+      navigate("/player");
+      return;
+    }
+
+    // Tap to open player (minimal movement)
+    if (totalMovement < 10) {
+      triggerHaptic("light");
       navigate("/player");
     }
   };
@@ -77,6 +107,7 @@ const MiniPlayerBar = () => {
       posX: position.x,
       posY: position.y,
     };
+    swipeStartYRef.current = e.clientY;
     setIsDragging(true);
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -98,6 +129,7 @@ const MiniPlayerBar = () => {
       const deltaY = Math.abs(e.clientY - dragStartRef.current.y);
 
       if (deltaX < 5 && deltaY < 5) {
+        triggerHaptic("light");
         navigate("/player");
       }
     };
@@ -125,10 +157,20 @@ const MiniPlayerBar = () => {
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
     >
+      {/* Swipe Hint */}
+      {swipeHint && (
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-primary bg-background/90 px-2 py-1 rounded-full animate-bounce">
+          ↑ Swipe up to expand
+        </div>
+      )}
+      
       {/* Rotating Disc */}
       <div className="relative group">
         {/* Outer Ring with glow */}
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 p-1 shadow-2xl shadow-primary/30 group-hover:scale-105 transition-transform">
+        <div className={cn(
+          "w-20 h-20 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 p-1 shadow-2xl shadow-primary/30 transition-transform",
+          isDragging ? "scale-110" : "group-hover:scale-105"
+        )}>
           {/* Inner Disc */}
           <div className="w-full h-full rounded-full bg-gradient-to-br from-card to-muted border-2 border-primary/40 overflow-hidden relative animate-spin-slow">
             {/* Vinyl grooves effect */}

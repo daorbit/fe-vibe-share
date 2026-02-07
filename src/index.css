@@ -2,8 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap");
 
 @layer base {
   :root {
@@ -38,10 +38,22 @@
     --radius: 0.5rem;
 
     /* Warm gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(16 90% 55%), hsl(35 100% 55%));
-    --gradient-secondary: linear-gradient(135deg, hsl(200 80% 50%), hsl(16 90% 55%));
-    --gradient-accent: linear-gradient(135deg, hsl(35 100% 55%), hsl(16 90% 55%));
-    
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(16 90% 55%),
+      hsl(35 100% 55%)
+    );
+    --gradient-secondary: linear-gradient(
+      135deg,
+      hsl(200 80% 50%),
+      hsl(16 90% 55%)
+    );
+    --gradient-accent: linear-gradient(
+      135deg,
+      hsl(35 100% 55%),
+      hsl(16 90% 55%)
+    );
+
     /* Shadows */
     --shadow-glow: 0 0 40px -10px hsl(16 90% 55% / 0.4);
     --shadow-card: 0 8px 32px -8px hsl(0 0% 0% / 0.4);
@@ -76,13 +88,14 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Outfit', 'Inter', sans-serif;
+    font-family: "Outfit", "Inter", sans-serif;
     position: fixed;
     overflow: hidden;
     width: 100%;
     height: 100%;
     /* Support for iOS safe areas */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    padding: env(safe-area-inset-top) env(safe-area-inset-right)
+      env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
 
   #root {
@@ -112,7 +125,7 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
@@ -120,11 +133,13 @@
   .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted)) transparent;
+      display: none;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
     width: 4px;
     height: 4px;
+    display: none;
   }
 
   .scrollbar-thin::-webkit-scrollbar-track {
@@ -158,14 +173,18 @@
   }
 
   .gradient-border::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
     padding: 1px;
     background: var(--gradient-primary);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     opacity: 0.5;
@@ -289,7 +308,7 @@
   }
 
   .shine::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background: linear-gradient(
@@ -377,43 +396,84 @@
 }
 
 @keyframes fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
-  0% { opacity: 0; transform: translateY(24px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-down {
-  0% { opacity: 0; transform: translateY(-24px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  0% { opacity: 0; transform: scale(0.9); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 40px -10px hsl(262 90% 62% / 0.4); }
-  50% { box-shadow: 0 0 60px -10px hsl(262 90% 62% / 0.6); }
+  0%,
+  100% {
+    box-shadow: 0 0 40px -10px hsl(262 90% 62% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 60px -10px hsl(262 90% 62% / 0.6);
+  }
 }
 
 /* Skeleton loading */
@@ -430,22 +490,22 @@
 
 /* Ant Design overrides */
 .ant-btn {
-  font-family: 'Outfit', 'Inter', sans-serif !important;
+  font-family: "Outfit", "Inter", sans-serif !important;
   box-shadow: none !important;
 }
 
 .ant-typography {
-  font-family: 'Outfit', 'Inter', sans-serif !important;
+  font-family: "Outfit", "Inter", sans-serif !important;
 }
 
 .ant-input,
 .ant-input-password,
 .ant-select-selector {
-  font-family: 'Outfit', 'Inter', sans-serif !important;
+  font-family: "Outfit", "Inter", sans-serif !important;
 }
 
 .ant-tabs-tab {
-  font-family: 'Outfit', 'Inter', sans-serif !important;
+  font-family: "Outfit", "Inter", sans-serif !important;
 }
 
 /* Custom scrollbar */
@@ -473,14 +533,14 @@
   * {
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* Prevent auto-zoom on input focus - minimum 16px font size */
   input,
   textarea,
   select {
     font-size: 16px !important;
   }
-  
+
   /* Ensure buttons and links are immediately responsive */
   button,
   a,
@@ -488,7 +548,7 @@
   .cursor-pointer {
     touch-action: manipulation;
   }
-  
+
   /* Remove hover delay */
   .hover\:bg-secondary:hover,
   .hover\:bg-secondary\/80:hover,
@@ -503,7 +563,7 @@
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   .touch-manipulation {
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -512,7 +572,8 @@
 
 /* Floating animation for welcome drawer */
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
   25% {
@@ -528,7 +589,8 @@
 
 /* Pulse animation for music playing */
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {
@@ -538,7 +600,8 @@
 
 /* Music bars animation */
 @keyframes music-bar-1 {
-  0%, 100% {
+  0%,
+  100% {
     height: 20%;
   }
   50% {
@@ -547,7 +610,8 @@
 }
 
 @keyframes music-bar-2 {
-  0%, 100% {
+  0%,
+  100% {
     height: 40%;
   }
   50% {
@@ -556,7 +620,8 @@
 }
 
 @keyframes music-bar-3 {
-  0%, 100% {
+  0%,
+  100% {
     height: 60%;
   }
   50% {
@@ -566,7 +631,8 @@
 
 /* Scale bounce animation */
 @keyframes scale-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {
@@ -579,19 +645,19 @@
   .animate-pulse-slow {
     animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .animate-music-bar-1 {
     animation: music-bar-1 0.8s ease-in-out infinite;
   }
-  
+
   .animate-music-bar-2 {
     animation: music-bar-2 0.9s ease-in-out infinite;
   }
-  
+
   .animate-music-bar-3 {
     animation: music-bar-3 0.7s ease-in-out infinite;
   }
-  
+
   .animate-scale-bounce {
     animation: scale-bounce 2s ease-in-out infinite;
   }
@@ -609,7 +675,9 @@
     background: white;
     border-radius: 8px;
     padding: 10px 16px;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow:
+      0 3px 12px rgba(0, 0, 0, 0.15),
+      0 1px 3px rgba(0, 0, 0, 0.1);
     font-size: 14px;
     font-weight: 500;
     color: #1f2937;
@@ -620,6 +688,24 @@
   }
 }
 
+/* Slide out animation for swipe to remove */
+@keyframes slide-out-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+    height: 0;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+.animate-slide-out-right {
+  animation: slide-out-right 0.2s ease-out forwards;
+}
 
 @keyframes spin-slow {
   from {
@@ -639,4 +725,24 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Safe area top for offline indicator */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Utility class for hiding scrollbar on specific elements */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
 }

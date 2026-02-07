@@ -26,6 +26,7 @@ interface PlayerContextType {
   closePlayer: () => void;
   getCurrentSong: () => SongLink | undefined;
   isPlayingFromTemporary: boolean;
+  removeSongFromQueue: (index: number) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | null>(null);
@@ -139,6 +140,25 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsPlaying(false);
   }, []);
 
+  const removeSongFromQueue = useCallback((index: number) => {
+    setPlayerState(prev => {
+      if (!prev || prev.songs.length <= 1) return prev;
+      
+      const newSongs = prev.songs.filter((_, i) => i !== index);
+      let newIndex = prev.currentIndex;
+      
+      // Adjust current index if needed
+      if (index < prev.currentIndex) {
+        newIndex = prev.currentIndex - 1;
+      } else if (index === prev.currentIndex) {
+        // If removing current song, stay at same index (next song slides in)
+        newIndex = Math.min(prev.currentIndex, newSongs.length - 1);
+      }
+      
+      return { ...prev, songs: newSongs, currentIndex: newIndex };
+    });
+  }, []);
+
   return (
     <PlayerContext.Provider value={{
       playerState,
@@ -152,6 +172,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
       closePlayer,
       getCurrentSong,
       isPlayingFromTemporary: !!playerState?.temporarySongs,
+      removeSongFromQueue,
     }}>
       {children}
     </PlayerContext.Provider>
